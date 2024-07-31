@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Image, SafeAreaView, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import CustomTextInput from '../components/CustomTextInput';
+import RoundedButton from '../components/RoundedButton';
 
 const SignIn = ({ navigation }) => {
   console.log("Cadastro feito com sucesso!");
@@ -39,11 +40,7 @@ const SignIn = ({ navigation }) => {
       <ScrollView contentContainerStyle={styles.scrollView}>
         <CustomTextInput label="E-mail" placeholder="Digite seu e-mail" value={email} onChangeText={setEmail} />
         <CustomTextInput label="Senha" placeholder="Digite sua senha" value={senha} onChangeText={setSenha} secureTextEntry />
-        <TouchableOpacity onPress={verificarLogin}>
-          <Text style={styles.button}>
-            Entrar
-          </Text>
-        </TouchableOpacity>
+        <RoundedButton title="Entrar" onPress={verificarLogin} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -63,14 +60,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  button: {
-    margin: 10,
-    padding: 15,
-    backgroundColor: '#F3BD0F',
-    borderRadius: 20,
-    textAlign: 'center',
-    color: 'white',
-  },
+  
 });
 
 export default SignIn;

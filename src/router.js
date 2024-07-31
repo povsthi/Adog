@@ -30,6 +30,12 @@ function Routes() {
         <Stack.Screen 
           name="signup" 
           component={SignUp} 
+          options={{
+            headerStyle: {
+              ...defaultScreenOptions.headerStyle,
+              paddingTop: 20, // Espaçamento no topo da tela abaixo do header
+            },
+          }}
         />
         <Stack.Screen 
           name="signin" 

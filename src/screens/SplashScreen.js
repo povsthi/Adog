@@ -11,7 +11,7 @@ const SplashScreen = () => {
   
     const handleNavigation = React.useCallback(() => {
       const timer = setTimeout(() => {
-        navigation.navigate("signin");
+        navigation.navigate("signup");
       }, 2000);
   
       return () => clearTimeout(timer);

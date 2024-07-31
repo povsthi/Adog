@@ -65,7 +65,7 @@ const SignUp = ({ navigation }) => {
         <TouchableOpacity onPress={Cadastrar}>
           <Text style={styles.button}>Cadastrar</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => navigation.navigate('SignIn')}>
+        <TouchableOpacity onPress={() => navigation.navigate('signin')}>
           <Text style={styles.signInText}>Já tenho conta</Text>
         </TouchableOpacity>
       </ScrollView>
@@ -80,13 +80,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
+    paddingTop: 20,
     width: '100%',
   },
   button: {
     margin: 10,
     padding: 15,
     backgroundColor: '#212A75',
-    borderRadius: 20,
+    borderRadius: 100,
     textAlign: 'center',
     fontWeight: 'bold',
     color: '#fff',

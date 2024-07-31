@@ -23,7 +23,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 16,
-    marginBottom: 8,
+    marginTop: 3,
     color: '#333', 
   },
   input: {
