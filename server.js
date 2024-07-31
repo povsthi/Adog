@@ -151,6 +151,7 @@ app.post('/login', async (req, res) => {
         res.json({ "mensagem": "Usuário Inválido" });
     }
     console.log(result);
+    console.log("brilhou");
 });
 
 app.listen(port, () => {

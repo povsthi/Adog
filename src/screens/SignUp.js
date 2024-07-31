@@ -31,7 +31,7 @@ const SignUp = ({ navigation }) => {
     const jsonBody = JSON.stringify(userObj);
     console.log(jsonBody);
 
-    fetch('http://localhost:3001;', {
+    fetch('http://adog.linceonline.com.br:3306/usuarios;', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -42,7 +42,7 @@ const SignUp = ({ navigation }) => {
       .then(response => response.json())
       .then(json => {
         console.log(json);
-        navigation.goBack();
+        navigation.goBack(); // Navega de volta após o cadastro bem-sucedido
       })
       .catch(err => {
         console.log(err);
@@ -65,6 +65,9 @@ const SignUp = ({ navigation }) => {
         <TouchableOpacity onPress={Cadastrar}>
           <Text style={styles.button}>Cadastrar</Text>
         </TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate('SignIn')}>
+          <Text style={styles.signInText}>Já tenho conta</Text>
+        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
@@ -78,16 +81,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
     width: '100%',
-    
   },
   button: {
     margin: 10,
     padding: 15,
-    backgroundColor: '#F3BD0F',
+    backgroundColor: '#212A75',
     borderRadius: 20,
     textAlign: 'center',
     fontWeight: 'bold',
     color: '#fff',
+  },
+  signInText: {
+    marginTop: 20,
+    textAlign: 'center',
+    color: '#308FF',
+    textDecorationLine: 'underline',
   },
 });
 

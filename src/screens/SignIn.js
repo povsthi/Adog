@@ -12,7 +12,7 @@ const SignIn = ({ navigation }) => {
     var userObj = { email: email, senha: senha };
     var jsonBody = JSON.stringify(userObj);
     console.log(jsonBody);
-    fetch('http://localhost:3001;', {
+    fetch('http://adog.linceonline.com.br:3306/login;', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

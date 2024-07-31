@@ -7,39 +7,46 @@ import SignIn from './SignIn';
 
 const SplashScreen = () => {
 
-  const navigation = useNavigation();
+    const navigation = useNavigation();
+  
+    const handleNavigation = React.useCallback(() => {
+      const timer = setTimeout(() => {
+        navigation.navigate("signin");
+      }, 2000);
+  
+      return () => clearTimeout(timer);
+    }, [navigation]); 
+  
+    useFocusEffect(handleNavigation)
 
-  useFocusEffect(() => {
-    const timer = setTimeout(() => {
-      navigation.navigate("signin");
-    }, 2000);
+    return (
 
-    return () => clearTimeout(timer);
-  }, [navigation]);
+        <LinearGradient colors={["#3085FF", "#212A75"]} style={styles.container}>
+            <View style={styles.imageContainer}>
+                <Image source={require('../../assets/LogoAdog.png')} style={styles.logo} />
+            </View>
+        </LinearGradient>
 
-  return (
-    <LinearGradient colors={["#212A75", "#6F4875"]} style={styles.container}>
-      <View style={styles.imageContainer}>
-        <Image source={require('../../assets/LogoAdog.png')} style={styles.logo} />
-      </View>
-    </LinearGradient>
-  );
+    );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  imageContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  logo: {
-    width: 80,
-    height: 80,
-  },
+    container: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',   
+    
+      },
+      imageContainer: {
+        alignItems: 'center',
+        justifyContent:   
+     'center',
+      },
+    logo: {
+        width: 200,
+        height: 200,
+    },
+
 });
 
-export default SplashScreen;
+export default SplashScreen;

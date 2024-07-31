@@ -6,7 +6,8 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "back": "nodemon server.js"
   },
   "dependencies": {
     "@expo-google-fonts/abril-fatface": "^0.2.3",
@@ -53,6 +54,7 @@
     "eslint-plugin-jsx-a11y": "^6.9.0",
     "eslint-plugin-react": "^7.34.3",
     "eslint-plugin-react-hooks": "^4.6.2",
+    "nodemon": "^3.1.4",
     "prettier": "^3.3.2"
   },
   "private": true
