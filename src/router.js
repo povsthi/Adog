@@ -33,7 +33,7 @@ function Routes() {
           options={{
             headerStyle: {
               ...defaultScreenOptions.headerStyle,
-              paddingTop: 20, // Espaçamento no topo da tela abaixo do header
+              paddingTop: 20,
             },
           }}
         />

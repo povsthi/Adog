@@ -12,11 +12,10 @@ const RoundedButton = ({ onPress, title }) => {
 const styles = StyleSheet.create({
   button: {
     margin: 10,
-    paddingVertical: 15,
-    paddingHorizontal: 20,
+    padding: 20,
     backgroundColor: '#212A75',
-    borderRadius: 30, 
-    textAlign: 'center',
+    borderRadius: 20, 
+  
   },
   buttonText: {
     fontWeight: 'bold',

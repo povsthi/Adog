@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Image, SafeAreaView, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, Image, SafeAreaView, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import CustomTextInput from '../components/CustomTextInput';
 
@@ -31,7 +31,7 @@ const SignUp = ({ navigation }) => {
     const jsonBody = JSON.stringify(userObj);
     console.log(jsonBody);
 
-    fetch('http://adog.linceonline.com.br:3306/usuarios;', {
+    fetch('http://localhost:3001/usuarios;', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -50,7 +50,7 @@ const SignUp = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+      <View style={styles.container}>
       <ScrollView showsHorizontalScrollIndicator={false}>
         <CustomTextInput label="Nome" placeholder="Digite seu nome" value={nome} onChangeText={setNome} />
         <CustomTextInput label="E-mail" placeholder="Digite seu e-mail" value={email} onChangeText={setEmail} />
@@ -68,8 +68,8 @@ const SignUp = ({ navigation }) => {
         <TouchableOpacity onPress={() => navigation.navigate('signin')}>
           <Text style={styles.signInText}>Já tenho conta</Text>
         </TouchableOpacity>
-      </ScrollView>
-    </SafeAreaView>
+      </ScrollView>  
+    </View>
   );
 };
 
@@ -80,7 +80,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
-    paddingTop: 20,
     width: '100%',
   },
   button: {

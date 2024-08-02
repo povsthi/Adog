@@ -91,7 +91,7 @@ app.post('/parceiros', (req, res) => {
     const { nomeParceiro, tipoParceiro, telefoneParceiro, local_parceiro } = req.body;
     console.log('Dados recebidos:', req.body);
 
-    const id = [ nomeParceiro, tipoParceiro, telefoneParceiro, local_parceiro];
+    const id = [nomeParceiro, tipoParceiro, telefoneParceiro, local_parceiro];
     const query = `INSERT INTO Parceiro (nomeParceiro, tipoParceiro, telefoneParceiro, local_parceiro) VALUES (?, ?, ?, ?)`;
 
     execSQLQuery(query, id, res);
@@ -102,8 +102,8 @@ app.post('/anuncios', (req, res) => {
     const { tipoAnuncio, dataAnuncio } = req.body;
     console.log('Dados recebidos:', req.body);
 
-    const id = [ tipoAnuncio, dataAnuncio ];
-    const query = `INSERT INTO Parceiro (tipoAnuncio, dataAnuncio) VALUES (?, ?, ?, ?)`;
+    const id = [tipoAnuncio, dataAnuncio];
+    const query = `INSERT INTO Anuncio (tipoAnuncio, dataAnuncio) VALUES (?, ?)`;
 
     execSQLQuery(query, id, res);
 });
@@ -113,19 +113,8 @@ app.post('/interesses', (req, res) => {
     const { idUsuario, idPet } = req.body;
     console.log('Dados recebidos:', req.body);
 
-    const id = [ idUsuario, idPet ];
-    const query = `INSERT INTO Parceiro (idUsuario, idPet) VALUES (?, ?)`;
-
-    execSQLQuery(query, id, res);
-});
-
-app.post('/interesses', (req, res) => {
-    console.log('Recebendo requisição POST em /interesses');
-    const { idUsuario, idPet } = req.body;
-    console.log('Dados recebidos:', req.body);
-
-    const id = [ idUsuario, idPet ];
-    const query = `INSERT INTO Parceiro (idUsuario, idPet) VALUES (?, ?)`;
+    const id = [idUsuario, idPet];
+    const query = `INSERT INTO Interesses (idUsuario, idPet) VALUES (?, ?)`;
 
     execSQLQuery(query, id, res);
 });
