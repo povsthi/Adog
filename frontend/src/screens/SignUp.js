@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
-import { View, Image, SafeAreaView, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, Picker } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import CustomTextInput from '../components/CustomTextInput';
 
 const SignUp = ({ navigation }) => {
-  console.log("Cadastro feito com sucesso!");
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [data, setDataNascimento] = useState('');
@@ -15,6 +14,26 @@ const SignUp = ({ navigation }) => {
   const [numero, setNumero] = useState('');
   const [senha, setSenha] = useState('');
   const [confirmarSenha, setConfirmarSenha] = useState('');
+  const [estados, setEstados] = useState([]);
+  const [cidades, setCidades] = useState([]);
+
+  // Fetch estados from IBGE API
+  useEffect(() => {
+    fetch('https://servicodados.ibge.gov.br/api/v1/localidades/estados')
+      .then(response => response.json())
+      .then(data => setEstados(data))
+      .catch(err => console.log(err));
+  }, []);
+
+  // Fetch cidades when estado changes
+  useEffect(() => {
+    if (estado) {
+      fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${estado}/municipios`)
+        .then(response => response.json())
+        .then(data => setCidades(data))
+        .catch(err => console.log(err));
+    }
+  }, [estado]);
 
   const Cadastrar = () => {
     if (!nome || !email || !senha || !confirmarSenha || !cpf || !estado || !cidade || !rua || !numero) {
@@ -50,14 +69,38 @@ const SignUp = ({ navigation }) => {
   };
 
   return (
-      <View style={styles.container}>
+    <View style={styles.container}>
       <ScrollView showsHorizontalScrollIndicator={false}>
         <CustomTextInput label="Nome" placeholder="Digite seu nome" value={nome} onChangeText={setNome} />
         <CustomTextInput label="E-mail" placeholder="Digite seu e-mail" value={email} onChangeText={setEmail} />
         <CustomTextInput label="Data de Nascimento" placeholder="Digite sua data de nascimento" value={data} onChangeText={setDataNascimento} />
         <CustomTextInput label="CPF" placeholder="Digite seu CPF" value={cpf} onChangeText={setCpf} />
-        <CustomTextInput label="Estado" placeholder="Digite seu estado" value={estado} onChangeText={setEstado} />
-        <CustomTextInput label="Cidade" placeholder="Digite sua cidade" value={cidade} onChangeText={setCidade} />
+        
+        <Text>Estado</Text>
+        <Picker
+          selectedValue={estado}
+          onValueChange={(itemValue) => setEstado(itemValue)}
+          style={styles.picker}
+        >
+          <Picker.Item label="Selecione um estado" value="" />
+          {estados.map(estado => (
+            <Picker.Item key={estado.id} label={estado.sigla} value={estado.id} />
+          ))}
+        </Picker>
+
+        <Text>Cidade</Text>
+        <Picker
+          selectedValue={cidade}
+          onValueChange={(itemValue) => setCidade(itemValue)}
+          style={styles.picker}
+          enabled={estado !== ''}
+        >
+          <Picker.Item label="Selecione uma cidade" value="" />
+          {cidades.map(cidade => (
+            <Picker.Item key={cidade.id} label={cidade.nome} value={cidade.id} />
+          ))}
+        </Picker>
+
         <CustomTextInput label="Rua" placeholder="Digite sua rua" value={rua} onChangeText={setRua} />
         <CustomTextInput label="Número" placeholder="Digite o número" value={numero} onChangeText={setNumero} keyboardType="numeric" />
         <CustomTextInput label="Senha" placeholder="Digite sua senha" value={senha} onChangeText={setSenha} secureTextEntry />
@@ -96,6 +139,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#308FF',
     textDecorationLine: 'underline',
+  },
+  picker: {
+    width: '100%',
+    height: 50,
+    marginBottom: 20,
   },
 });
 
