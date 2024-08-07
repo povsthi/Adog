@@ -31,7 +31,7 @@ const SignUp = ({ navigation }) => {
     const jsonBody = JSON.stringify(userObj);
     console.log(jsonBody);
 
-    fetch('http://localhost:3001/usuarios;', {
+    fetch('http://200.18.141.196:3001/usuarios;', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
