@@ -1,25 +1,45 @@
-import React from 'react';
-import { View, Text, Image, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, Image, StyleSheet, Dimensions, TouchableOpacity, ActivityIndicator } from 'react-native';
 import Carousel from 'react-native-reanimated-carousel';
 import { Feather, Ionicons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
 
-const user = {
-  nome: 'Thiago',
-  idade: '17 anos',
-  localizacao: 'Cataguases-MG',
-  descricao: 'Vive em casa, possui outros pets, fica em casa 8 horas por dia.',
-  imagens: [
-    require('../../assets/Pipoca1.jpg'), 
-    require('../../assets/Pipoca2.jpg'),
-    require('../../assets/Pipoca3.jpg'),
-  ],
-};
-
 const ProfileUser = () => {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('http://200.18.141.196:3001/usuarios')
+      .then(response => response.json())
+      .then(data => {
+        setUser(data[0]); 
+        setLoading(false);
+      })
+      .catch(err => {
+        console.log('Erro ao buscar usuário:', err);
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
+  }
+
+  if (!user) {
+    return (
+      <View style={styles.container}>
+        <Text>Erro ao carregar dados do usuário.</Text>
+      </View>
+    );
+  }
+
   const renderImage = ({ item }) => (
-    <Image source={item} style={styles.userImage} />
+    <Image source={{ uri: item }} style={styles.userImage} />
   );
 
   return (
@@ -62,6 +82,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   carouselContainer: {
     alignItems: 'center',
@@ -100,6 +122,7 @@ const styles = StyleSheet.create({
 });
 
 export default ProfileUser;
+
 
 
 

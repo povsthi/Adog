@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, Picker } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import CustomTextInput from '../components/CustomTextInput';
+import ImageUploader from '../components/ImageUploader';
+
 
 const SignUp = ({ navigation }) => {
   const [nome, setNome] = useState('');
@@ -17,7 +19,7 @@ const SignUp = ({ navigation }) => {
   const [estados, setEstados] = useState([]);
   const [cidades, setCidades] = useState([]);
 
-  // Fetch estados from IBGE API
+
   useEffect(() => {
     fetch('https://servicodados.ibge.gov.br/api/v1/localidades/estados')
       .then(response => response.json())
@@ -25,7 +27,6 @@ const SignUp = ({ navigation }) => {
       .catch(err => console.log(err));
   }, []);
 
-  // Fetch cidades when estado changes
   useEffect(() => {
     if (estado) {
       fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${estado}/municipios`)
@@ -61,7 +62,7 @@ const SignUp = ({ navigation }) => {
       .then(response => response.json())
       .then(json => {
         console.log(json);
-        navigation.goBack(); // Navega de volta após o cadastro bem-sucedido
+        navigation.goBack(); 
       })
       .catch(err => {
         console.log(err);
