@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, TouchableOpacity, StyleSheet } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
+import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import BottomNavigation from '../components/BottomNavigation';
 import CustomTextInput from '../components/CustomTextInput';
-import ImageUploader from '../components/ImageUploader';
+import RNPickerSelect from 'react-native-picker-select';
 
 const AddPet = () => {
   const [nomePet, setNomePet] = useState('');
@@ -65,18 +64,18 @@ const AddPet = () => {
         value={nomePet}
         onChangeText={setNomePet}
       />
-      <View style={styles.pickerContainer}>
-        <Picker
-          selectedValue={tipoPet}
-          onValueChange={(itemValue) => setTipoPet(itemValue)}
-          style={styles.picker}
-        >
-          <Picker.Item label="Selecione o tipo do pet" value="" />
-          <Picker.Item label="Cachorro" value="Cachorro" />
-          <Picker.Item label="Gato" value="Gato" />
-          <Picker.Item label="Outro" value="Outro" />
-        </Picker>
-      </View>
+      <RNPickerSelect
+        onValueChange={(value) => setTipoPet(value)}
+        items={[
+          { label: 'Selecione o tipo do pet', value: '' },
+          { label: 'Cachorro', value: 'Cachorro' },
+          { label: 'Gato', value: 'Gato' },
+          { label: 'Outro', value: 'Outro' },
+        ]}
+        placeholder={{ label: 'Selecione o tipo do pet', value: '' }}
+        style={pickerStyles}
+        value={tipoPet}
+      />
       {tipoPet === 'Outro' && (
         <CustomTextInput
           placeholder="Digite o tipo do pet"
@@ -84,29 +83,27 @@ const AddPet = () => {
           onChangeText={setOutroTipo}
         />
       )}
-      <View style={styles.pickerContainer}>
-        <Picker
-          selectedValue={sexo}
-          onValueChange={(itemValue) => setSexo(itemValue)}
-          style={styles.picker}
-        >
-          <Picker.Item label="Selecione o sexo..." value="" />
-          <Picker.Item label="Macho" value="Macho" />
-          <Picker.Item label="Fêmea" value="Fêmea" />
-        </Picker>
-      </View>
-      <View style={styles.pickerContainer}>
-        <Picker
-          selectedValue={raca}
-          onValueChange={(itemValue) => setRaca(itemValue)}
-          style={styles.picker}
-        >
-          <Picker.Item label="Selecione a raça do cão..." value="" />
-          {breeds.map((breed) => (
-            <Picker.Item key={breed.value} label={breed.label} value={breed.value} />
-          ))}
-        </Picker>
-      </View>
+      <RNPickerSelect
+        onValueChange={(value) => setSexo(value)}
+        items={[
+          { label: 'Selecione o sexo...', value: '' },
+          { label: 'Macho', value: 'Macho' },
+          { label: 'Fêmea', value: 'Fêmea' },
+        ]}
+        placeholder={{ label: 'Selecione o sexo...', value: '' }}
+        style={pickerStyles}
+        value={sexo}
+      />
+      <RNPickerSelect
+        onValueChange={(value) => setRaca(value)}
+        items={[
+          { label: 'Selecione a raça do cão...', value: '' },
+          ...breeds
+        ]}
+        placeholder={{ label: 'Selecione a raça do cão...', value: '' }}
+        style={pickerStyles}
+        value={raca}
+      />
       <CustomTextInput
         placeholder="Porte"
         value={porte}
@@ -118,8 +115,8 @@ const AddPet = () => {
         onChangeText={setDataNascimento}
       />
       <TouchableOpacity onPress={RegistraPet}>
-          <Text style={styles.button}>Cadastrar</Text>
-        </TouchableOpacity>
+        <Text style={styles.button}>Cadastrar</Text>
+      </TouchableOpacity>
       <BottomNavigation />
     </View>
   );
@@ -140,18 +137,35 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#fff',
   },
-  pickerContainer: {
-    borderColor: 'gray',
+});
+
+const pickerStyles = StyleSheet.create({
+  inputIOS: {
+    fontSize: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 10,
     borderWidth: 1,
+    borderColor: '#ccc',
     borderRadius: 4,
-    marginBottom: 12,
+    color: '#333',
+    paddingRight: 30, // to ensure the text is not obscured by the icon
   },
-  picker: {
-    height: 40,
-    color: 'black',
+  inputAndroid: {
+    fontSize: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 4,
+    color: '#333',
+    paddingRight: 30, 
+  },
+  placeholder: {
+    color: '#999',
   },
 });
 
 export default AddPet;
+
 
 

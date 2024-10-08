@@ -8,6 +8,8 @@ import ProfilePet from './screens/ProfilePet';
 import Nots from './screens/Notfications'
 import { HeaderLogo, HeaderRightIcon } from './components/Header'; 
 import SplashScreen from './screens/SplashScreen';
+import SettingsScreen from './screens/Settings';
+import Register from './screens/Register';
 
 const Stack = createStackNavigator();
 
@@ -42,6 +44,10 @@ function Routes() {
           component={SignIn} 
         />
         <Stack.Screen 
+          name="register" 
+          component={Register} 
+        />
+        <Stack.Screen 
           name="home" 
           component={Home} 
           options={{
@@ -60,6 +66,13 @@ function Routes() {
           component={ProfilePet} 
           options={{
             headerRight: () => <HeaderRightIcon name="arrow-back" onPress={() => {}} />,
+          }}
+        />
+         <Stack.Screen 
+          name="settings" 
+          component={SettingsScreen} 
+          options={{
+            headerRight: () => <HeaderRightIcon name="bell" onPress={() => {}} />,
           }}
         />
       </Stack.Navigator>

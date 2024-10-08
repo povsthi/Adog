@@ -37,11 +37,11 @@ const SignIn = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollView}>
+    
         <CustomTextInput label="E-mail" placeholder="Digite seu e-mail" value={email} onChangeText={setEmail} />
         <CustomTextInput label="Senha" placeholder="Digite sua senha" value={senha} onChangeText={setSenha} secureTextEntry />
         <RoundedButton title="Entrar" onPress={verificarLogin} />
-      </ScrollView>
+
     </SafeAreaView>
   );
 };
@@ -54,6 +54,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
     width: '100%',
+    flexGrow: 1,
   },
   scrollView: {
     flexGrow: 1,

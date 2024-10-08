@@ -6,7 +6,7 @@ import Home from '../screens/Home';
 import Search from '../screens/SearchScreen';
 import AddPet from '../screens/AddPet';
 import Favorites from '../screens/Favorites';
-import Settings from '../screens/Settings';
+import SettingsScreen from '../screens/Settings';
 
 const Tab = createBottomTabNavigator();
 
@@ -46,7 +46,7 @@ const BottomNavigation = () => {
       <Tab.Screen name="Search" component={Search} />
       <Tab.Screen name="AddPet" component={AddPet} />
       <Tab.Screen name="Favorites" component={Favorites} />
-      <Tab.Screen name="Settings" component={Settings} />
+      <Tab.Screen name="Settings" component={SettingsScreen} />
     </Tab.Navigator>
   );
 };

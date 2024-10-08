@@ -20,10 +20,12 @@ const CustomTextInput = ({ label, placeholder, value, onChangeText, secureTextEn
 const styles = StyleSheet.create({
   container: {
     marginBottom: 20, 
+    width: '100%',
+    alignItems: 'center',
   },
   label: {
     fontSize: 16,
-    marginTop: 3,
+    marginTop: 5,
     color: '#333', 
   },
   input: {
@@ -35,9 +37,10 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     padding: 10,
     textAlign: 'center',
-    width: '80%',
+    width: '100%',
   },
 });
 
 export default CustomTextInput;
+
 

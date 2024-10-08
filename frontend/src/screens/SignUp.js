@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, Picker } from 'react-native';
-import { ScrollView } from 'react-native-gesture-handler';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import CustomTextInput from '../components/CustomTextInput';
-import ImageUploader from '../components/ImageUploader';
-
+import RoundedButton from '../components/RoundedButton';
+import RNPickerSelect from 'react-native-picker-select';
 
 const SignUp = ({ navigation }) => {
   const [nome, setNome] = useState('');
@@ -19,11 +18,13 @@ const SignUp = ({ navigation }) => {
   const [estados, setEstados] = useState([]);
   const [cidades, setCidades] = useState([]);
 
-
   useEffect(() => {
     fetch('https://servicodados.ibge.gov.br/api/v1/localidades/estados')
       .then(response => response.json())
-      .then(data => setEstados(data))
+      .then(data => setEstados(data.map(estado => ({
+        label: estado.sigla,
+        value: estado.id
+      }))))
       .catch(err => console.log(err));
   }, []);
 
@@ -31,7 +32,10 @@ const SignUp = ({ navigation }) => {
     if (estado) {
       fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${estado}/municipios`)
         .then(response => response.json())
-        .then(data => setCidades(data))
+        .then(data => setCidades(data.map(cidade => ({
+          label: cidade.nome,
+          value: cidade.id
+        }))))
         .catch(err => console.log(err));
     }
   }, [estado]);
@@ -51,7 +55,7 @@ const SignUp = ({ navigation }) => {
     const jsonBody = JSON.stringify(userObj);
     console.log(jsonBody);
 
-    fetch('http://200.18.141.196:3001/usuarios;', {
+    fetch('http://200.18.141.196:3001/usuarios', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -77,38 +81,30 @@ const SignUp = ({ navigation }) => {
         <CustomTextInput label="Data de Nascimento" placeholder="Digite sua data de nascimento" value={data} onChangeText={setDataNascimento} />
         <CustomTextInput label="CPF" placeholder="Digite seu CPF" value={cpf} onChangeText={setCpf} />
         
-        <Text>Estado</Text>
-        <Picker
-          selectedValue={estado}
-          onValueChange={(itemValue) => setEstado(itemValue)}
-          style={styles.picker}
-        >
-          <Picker.Item label="Selecione um estado" value="" />
-          {estados.map(estado => (
-            <Picker.Item key={estado.id} label={estado.sigla} value={estado.id} />
-          ))}
-        </Picker>
+        <Text style={styles.label}>Estado</Text>
+        <RNPickerSelect
+          onValueChange={(value) => setEstado(value)}
+          items={estados}
+          placeholder={{ label: 'Selecione um estado', value: null }}
+          style={pickerStyles}
+          value={estado}
+        />
 
-        <Text>Cidade</Text>
-        <Picker
-          selectedValue={cidade}
-          onValueChange={(itemValue) => setCidade(itemValue)}
-          style={styles.picker}
-          enabled={estado !== ''}
-        >
-          <Picker.Item label="Selecione uma cidade" value="" />
-          {cidades.map(cidade => (
-            <Picker.Item key={cidade.id} label={cidade.nome} value={cidade.id} />
-          ))}
-        </Picker>
+        <Text style={styles.label}>Cidade</Text>
+        <RNPickerSelect
+          onValueChange={(value) => setCidade(value)}
+          items={cidades}
+          placeholder={{ label: 'Selecione uma cidade', value: null }}
+          style={pickerStyles}
+          value={cidade}
+          disabled={!estado}  // Disable if no state is selected
+        />
 
         <CustomTextInput label="Rua" placeholder="Digite sua rua" value={rua} onChangeText={setRua} />
         <CustomTextInput label="Número" placeholder="Digite o número" value={numero} onChangeText={setNumero} keyboardType="numeric" />
         <CustomTextInput label="Senha" placeholder="Digite sua senha" value={senha} onChangeText={setSenha} secureTextEntry />
         <CustomTextInput label="Confirmar Senha" placeholder="Confirme sua senha" value={confirmarSenha} onChangeText={setConfirmarSenha} secureTextEntry />
-        <TouchableOpacity onPress={Cadastrar}>
-          <Text style={styles.button}>Cadastrar</Text>
-        </TouchableOpacity>
+        <RoundedButton title="Cadastrar" onPress={Cadastrar} />
         <TouchableOpacity onPress={() => navigation.navigate('signin')}>
           <Text style={styles.signInText}>Já tenho conta</Text>
         </TouchableOpacity>
@@ -121,19 +117,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    justifyContent: 'center',
-    alignItems: 'center',
     padding: 20,
     width: '100%',
-  },
-  button: {
-    margin: 10,
-    padding: 15,
-    backgroundColor: '#212A75',
-    borderRadius: 100,
-    textAlign: 'center',
-    fontWeight: 'bold',
-    color: '#fff',
   },
   signInText: {
     marginTop: 20,
@@ -141,11 +126,39 @@ const styles = StyleSheet.create({
     color: '#308FF',
     textDecorationLine: 'underline',
   },
-  picker: {
-    width: '100%',
-    height: 50,
-    marginBottom: 20,
+  label: {
+    fontSize: 16,
+    marginTop: 10,
+    marginBottom: 5,
+    color: '#333', 
+  },
+});
+
+const pickerStyles = StyleSheet.create({
+  inputIOS: {
+    fontSize: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 4,
+    color: '#333',
+    paddingRight: 30,
+  },
+  inputAndroid: {
+    fontSize: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 4,
+    color: '#333',
+    paddingRight: 30, 
+  },
+  placeholder: {
+    color: '#999',
   },
 });
 
 export default SignUp;
+
