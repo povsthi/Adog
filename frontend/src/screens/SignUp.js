@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView, PermissionsAndroid, Platform } from 'react-native';
+import Geolocation from 'react-native-geolocation-service'; // Adiciona o geolocation
 import CustomTextInput from '../components/CustomTextInput';
 import RoundedButton from '../components/RoundedButton';
-import RNPickerSelect from 'react-native-picker-select';
 
 const SignUp = ({ navigation }) => {
   const [nome, setNome] = useState('');
@@ -10,52 +10,68 @@ const SignUp = ({ navigation }) => {
   const [data, setDataNascimento] = useState('');
   const [cpf, setCpf] = useState('');
   const [estado, setEstado] = useState('');
-  const [cidade, setCidade] = useState('');
-  const [rua, setRua] = useState('');
-  const [numero, setNumero] = useState('');
   const [senha, setSenha] = useState('');
   const [confirmarSenha, setConfirmarSenha] = useState('');
-  const [estados, setEstados] = useState([]);
-  const [cidades, setCidades] = useState([]);
+  const [location, setLocation] = useState({ latitude: null, longitude: null }); 
 
   useEffect(() => {
-    fetch('https://servicodados.ibge.gov.br/api/v1/localidades/estados')
-      .then(response => response.json())
-      .then(data => setEstados(data.map(estado => ({
-        label: estado.sigla,
-        value: estado.id
-      }))))
-      .catch(err => console.log(err));
+    requestLocationPermission();
   }, []);
 
-  useEffect(() => {
-    if (estado) {
-      fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${estado}/municipios`)
-        .then(response => response.json())
-        .then(data => setCidades(data.map(cidade => ({
-          label: cidade.nome,
-          value: cidade.id
-        }))))
-        .catch(err => console.log(err));
+  const requestLocationPermission = async () => {
+    if (Platform.OS === 'android') {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+        {
+          title: 'Permissão de Localização',
+          message: 'Precisamos acessar sua localização para completar o cadastro.',
+          buttonNeutral: 'Pergunte-me depois',
+          buttonNegative: 'Cancelar',
+          buttonPositive: 'OK',
+        }
+      );
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        getCurrentLocation();
+      } else {
+        Alert.alert('Erro', 'Permissão de localização negada.');
+      }
+    } else {
+      getCurrentLocation();
     }
-  }, [estado]);
+  };
+
+  const getCurrentLocation = () => {
+    Geolocation.getCurrentPosition(
+      (position) => {
+        setLocation({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        });
+      },
+      (error) => {
+        console.error(error);
+        Alert.alert('Erro', 'Não foi possível obter sua localização.');
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+    );
+  };
 
   const Cadastrar = () => {
-    if (!nome || !email || !senha || !confirmarSenha || !cpf || !estado || !cidade || !rua || !numero) {
-      Alert.alert("Erro", "Todos os campos são obrigatórios!");
+    if (!nome || !email || !senha || !confirmarSenha || !cpf) {
+      Alert.alert('Erro', 'Todos os campos são obrigatórios!');
       return;
     }
 
     if (senha !== confirmarSenha) {
-      Alert.alert("Erro!", "Senhas diferentes");
+      Alert.alert('Erro!', 'Senhas diferentes');
       return;
     }
 
-    const userObj = { nome, email, senha };
+    const userObj = { nome, email, senha, latitude: location.latitude, longitude: location.longitude };
     const jsonBody = JSON.stringify(userObj);
     console.log(jsonBody);
 
-    fetch('http://200.18.141.196:3001/usuarios', {
+    fetch('http://localhost:3001/usuarios', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -63,12 +79,12 @@ const SignUp = ({ navigation }) => {
       },
       body: jsonBody,
     })
-      .then(response => response.json())
-      .then(json => {
+      .then((response) => response.json())
+      .then((json) => {
         console.log(json);
-        navigation.goBack(); 
+        navigation.goBack();
       })
-      .catch(err => {
+      .catch((err) => {
         console.log(err);
       });
   };
@@ -80,35 +96,13 @@ const SignUp = ({ navigation }) => {
         <CustomTextInput label="E-mail" placeholder="Digite seu e-mail" value={email} onChangeText={setEmail} />
         <CustomTextInput label="Data de Nascimento" placeholder="Digite sua data de nascimento" value={data} onChangeText={setDataNascimento} />
         <CustomTextInput label="CPF" placeholder="Digite seu CPF" value={cpf} onChangeText={setCpf} />
-        
-        <Text style={styles.label}>Estado</Text>
-        <RNPickerSelect
-          onValueChange={(value) => setEstado(value)}
-          items={estados}
-          placeholder={{ label: 'Selecione um estado', value: null }}
-          style={pickerStyles}
-          value={estado}
-        />
-
-        <Text style={styles.label}>Cidade</Text>
-        <RNPickerSelect
-          onValueChange={(value) => setCidade(value)}
-          items={cidades}
-          placeholder={{ label: 'Selecione uma cidade', value: null }}
-          style={pickerStyles}
-          value={cidade}
-          disabled={!estado}  // Disable if no state is selected
-        />
-
-        <CustomTextInput label="Rua" placeholder="Digite sua rua" value={rua} onChangeText={setRua} />
-        <CustomTextInput label="Número" placeholder="Digite o número" value={numero} onChangeText={setNumero} keyboardType="numeric" />
         <CustomTextInput label="Senha" placeholder="Digite sua senha" value={senha} onChangeText={setSenha} secureTextEntry />
         <CustomTextInput label="Confirmar Senha" placeholder="Confirme sua senha" value={confirmarSenha} onChangeText={setConfirmarSenha} secureTextEntry />
         <RoundedButton title="Cadastrar" onPress={Cadastrar} />
         <TouchableOpacity onPress={() => navigation.navigate('signin')}>
           <Text style={styles.signInText}>Já tenho conta</Text>
         </TouchableOpacity>
-      </ScrollView>  
+      </ScrollView>
     </View>
   );
 };
@@ -126,39 +120,8 @@ const styles = StyleSheet.create({
     color: '#308FF',
     textDecorationLine: 'underline',
   },
-  label: {
-    fontSize: 16,
-    marginTop: 10,
-    marginBottom: 5,
-    color: '#333', 
-  },
-});
-
-const pickerStyles = StyleSheet.create({
-  inputIOS: {
-    fontSize: 16,
-    paddingVertical: 12,
-    paddingHorizontal: 10,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 4,
-    color: '#333',
-    paddingRight: 30,
-  },
-  inputAndroid: {
-    fontSize: 16,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 4,
-    color: '#333',
-    paddingRight: 30, 
-  },
-  placeholder: {
-    color: '#999',
-  },
 });
 
 export default SignUp;
+
 

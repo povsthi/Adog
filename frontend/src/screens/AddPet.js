@@ -25,7 +25,7 @@ const AddPet = () => {
         setBreeds(breedOptions);
       })
       .catch(error => {
-        console.error('Erro ao buscar raças:', error);
+        console.error('Erro ao buscar raça:', error);
       });
   }, []);
 

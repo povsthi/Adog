@@ -1,22 +1,25 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { Header } from '../components/Header';
 
 const Register = () => {
   return (
     <View style={styles.container}>
+
+      <Header/>
  
       <Text style={styles.title}>Como deseja se cadastrar?</Text>
 
       <TouchableOpacity style={styles.button}>
         <View style={styles.buttonContent}>
-          <Image source={require('./assets/iconedepata-removebg-preview.png')} style={styles.icon} />
+          <Image source={require('../../assets/paw.png')} style={styles.icon} />
           <Text style={styles.buttonText}>Pretendente a Adoção</Text>
         </View>
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.button}>
         <View style={styles.buttonContent}>
-          <Image source={require('./assets/icone_de_dinheiro-removebg-preview.png')} style={styles.icon} />
+          <Image source={require('../../assets/coin.png')} style={styles.icon} />
           <Text style={styles.buttonText}>Parceiro</Text>
         </View>
       </TouchableOpacity>  
