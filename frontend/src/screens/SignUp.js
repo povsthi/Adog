@@ -76,10 +76,10 @@ const SignUp = ({ navigation }) => {
     })
       .then((response) => response.json())
       .then((json) => {
-        console.log("Resposta do servidor:", json); // Verificar resposta
+        console.log("Resposta do servidor:", json); 
         if (json.affectedRows && json.affectedRows > 0) {
           console.log("Redirecionando para home...");
-          navigation.navigate('home'); // Navegação
+          navigation.navigate("home"); 
         } else {
           Alert.alert('Erro', 'Falha no cadastro. Tente novamente.');
         }
@@ -99,7 +99,7 @@ const SignUp = ({ navigation }) => {
         <CustomTextInput label="Senha" placeholder="Digite sua senha" value={senha} onChangeText={setSenha} secureTextEntry />
         <CustomTextInput label="Confirmar Senha" placeholder="Confirme sua senha" value={confirmarSenha} onChangeText={setConfirmarSenha} secureTextEntry />
         <RoundedButton title="Cadastrar" onPress={Cadastrar} />
-        <TouchableOpacity onPress={() => navigation.navigate('signin')}>
+        <TouchableOpacity onPress={() => navigation.navigate("signin")}>
           <Text style={styles.signInText}>Já tenho conta</Text>
         </TouchableOpacity>
       </ScrollView>

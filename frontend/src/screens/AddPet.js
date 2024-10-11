@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, Text, StyleSheet, Image } from 'react-native';
 import BottomNavigation from '../components/BottomNavigation';
 import CustomTextInput from '../components/CustomTextInput';
 import RNPickerSelect from 'react-native-picker-select';
+import { launchImageLibrary } from 'react-native-image-picker';
 
 const AddPet = () => {
   const [nomePet, setNomePet] = useState('');
@@ -13,6 +14,7 @@ const AddPet = () => {
   const [dataNascimento, setDataNascimento] = useState('');
   const [breeds, setBreeds] = useState([]);
   const [outroTipo, setOutroTipo] = useState('');
+  const [foto, setFoto] = useState(null); 
 
   useEffect(() => {
     fetch('https://api.thedogapi.com/v1/breeds')
@@ -29,22 +31,38 @@ const AddPet = () => {
       });
   }, []);
 
+  const selecionarFoto = () => {
+    launchImageLibrary({ mediaType: 'photo' }, (response) => {
+      if (response.assets) {
+        setFoto(response.assets[0]); 
+      }
+    });
+  };
+
   const RegistraPet = async () => {
-    const petData = { 
-      nomePet, 
-      tipoPet: tipoPet === 'Outro' ? outroTipo : tipoPet,
-      raca, 
-      sexo, 
-      porte, 
-      dataNascimento 
-    };
+    const petData = new FormData();
+    petData.append('nomePet', nomePet);
+    petData.append('tipoPet', tipoPet === 'Outro' ? outroTipo : tipoPet);
+    petData.append('raca', raca);
+    petData.append('sexo', sexo);
+    petData.append('porte', porte);
+    petData.append('dataNascimento', dataNascimento);
+
+    if (foto) {
+      petData.append('foto', {
+        uri: foto.uri,
+        type: foto.type,
+        name: foto.fileName,
+      });
+    }
+
     try {
-      const response = await fetch('http://200.18.141.196:3001/pets', {
+      const response = await fetch('http://192.168.7.2:3001/pets', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'multipart/form-data',
         },
-        body: JSON.stringify(petData),
+        body: petData,
       });
 
       if (response.ok) {
@@ -59,11 +77,7 @@ const AddPet = () => {
 
   return (
     <View style={styles.container}>
-      <CustomTextInput
-        placeholder="Nome do Pet"
-        value={nomePet}
-        onChangeText={setNomePet}
-      />
+      <CustomTextInput placeholder="Nome do Pet" value={nomePet} onChangeText={setNomePet} />
       <RNPickerSelect
         onValueChange={(value) => setTipoPet(value)}
         items={[
@@ -77,11 +91,7 @@ const AddPet = () => {
         value={tipoPet}
       />
       {tipoPet === 'Outro' && (
-        <CustomTextInput
-          placeholder="Digite o tipo do pet"
-          value={outroTipo}
-          onChangeText={setOutroTipo}
-        />
+        <CustomTextInput placeholder="Digite o tipo do pet" value={outroTipo} onChangeText={setOutroTipo} />
       )}
       <RNPickerSelect
         onValueChange={(value) => setSexo(value)}
@@ -98,25 +108,25 @@ const AddPet = () => {
         onValueChange={(value) => setRaca(value)}
         items={[
           { label: 'Selecione a raça do cão...', value: '' },
-          ...breeds
+          ...breeds,
         ]}
         placeholder={{ label: 'Selecione a raça do cão...', value: '' }}
         style={pickerStyles}
         value={raca}
       />
-      <CustomTextInput
-        placeholder="Porte"
-        value={porte}
-        onChangeText={setPorte}
-      />
-      <CustomTextInput
-        placeholder="Data de Nascimento"
-        value={dataNascimento}
-        onChangeText={setDataNascimento}
-      />
+      <CustomTextInput placeholder="Porte" value={porte} onChangeText={setPorte} />
+      <CustomTextInput placeholder="Data de Nascimento" value={dataNascimento} onChangeText={setDataNascimento} />
+
+      <TouchableOpacity onPress={selecionarFoto}>
+        <Text style={styles.button}>Selecionar Foto</Text>
+      </TouchableOpacity>
+
+      {foto && <Image source={{ uri: foto.uri }} style={{ width: 100, height: 100 }} />}
+
       <TouchableOpacity onPress={RegistraPet}>
         <Text style={styles.button}>Cadastrar</Text>
       </TouchableOpacity>
+
       <BottomNavigation />
     </View>
   );
@@ -148,7 +158,7 @@ const pickerStyles = StyleSheet.create({
     borderColor: '#ccc',
     borderRadius: 4,
     color: '#333',
-    paddingRight: 30, // to ensure the text is not obscured by the icon
+    paddingRight: 30,
   },
   inputAndroid: {
     fontSize: 16,
@@ -158,7 +168,7 @@ const pickerStyles = StyleSheet.create({
     borderColor: '#ccc',
     borderRadius: 4,
     color: '#333',
-    paddingRight: 30, 
+    paddingRight: 30,
   },
   placeholder: {
     color: '#999',
@@ -166,6 +176,7 @@ const pickerStyles = StyleSheet.create({
 });
 
 export default AddPet;
+
 
 
 

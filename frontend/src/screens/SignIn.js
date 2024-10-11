@@ -33,7 +33,7 @@ const SignIn = ({ navigation }) => {
           const json = JSON.parse(text); 
           console.log("Resposta do servidor (JSON): ", json);
           if (json.mensagem === 'Usuário válido') {
-            navigation.navigate('home');
+            navigation.navigate("home");
           } else {
             console.log("Erro: Usuário inválido");
           }

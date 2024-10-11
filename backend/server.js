@@ -82,19 +82,48 @@ app.post('/login', async (req, res) => {
     console.log("brilhou");
 });
 
-app.post('/pets', (req, res) => {
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, 'uploads/'); 
+    },
+    filename: (req, file, cb) => {
+      cb(null, Date.now() + path.extname(file.originalname)); 
+    },
+  });
+  
+  const upload = multer({ storage });
+  
+  app.post('/pets', upload.single('foto'), (req, res) => {
     console.log('Recebendo requisição POST em /pets');
-    const { tipo, raca, nome, sexo, data_nascimento, porte, comportamento, cidade, rua, fk_usuario_id, fk_raca_id } = req.body;
-    console.log('Dados recebidos:', req.body);
-
-    const id = [tipo, raca, nome, sexo, data_nascimento, porte, comportamento, cidade, rua, fk_usuario_id, fk_raca_id];
-    const query = `
-        INSERT INTO Pet (Tipo, Raca, Nome, Sexo, Data_Nascimento, Porte, Comportamento, Cidade, Rua, FK_Usuario_ID, FK_Raca_ID)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    const {
+      tipo, raca, nome, sexo, data_nascimento, porte, comportamento, cidade, rua, fk_usuario_id, fk_raca_id
+    } = req.body;
+  
+    const foto = req.file ? req.file.filename : null; 
+  
+    const petData = [tipo, raca, nome, sexo, data_nascimento, porte, comportamento, cidade, rua, fk_usuario_id, fk_raca_id];
+  
+    const petQuery = `
+      INSERT INTO Pet (Tipo, Raca, Nome, Sexo, Data_Nascimento, Porte, Comportamento, Cidade, Rua, FK_Usuario_ID, FK_Raca_ID)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
-
-    execSQLQuery(query, id, res);
-});
+  
+    execSQLQuery(petQuery, petData, (result) => {
+      const petId = result.insertId;
+  
+      if (foto) {
+        const fotoQuery = `
+          INSERT INTO Foto (URL, FK_Pet_ID_Animal)
+          VALUES (?, ?)
+        `;
+        execSQLQuery(fotoQuery, [foto, petId], (fotoResult) => {
+          res.status(200).send('Pet cadastrado com sucesso, com foto.');
+        });
+      } else {
+        res.status(200).send('Pet cadastrado com sucesso, sem foto.');
+      }
+    });
+  });
 
 app.post('/anuncios', (req, res) => {
     console.log('Recebendo requisição POST em /anuncios');
