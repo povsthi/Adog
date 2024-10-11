@@ -13,7 +13,8 @@ const SignIn = ({ navigation }) => {
     var userObj = { email: email, senha: senha };
     var jsonBody = JSON.stringify(userObj);
     console.log(jsonBody);
-    fetch('http://200.18.141.196:3001/login;', {
+    
+    fetch('http://192.168.2.107:3001/login', { 
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -21,19 +22,30 @@ const SignIn = ({ navigation }) => {
       },
       body: jsonBody,
     })
-      .then(response => response.json())
-      .then(json => {
-        console.log(json);
-        if (json.mensagem === 'Usuário válido') {
-          navigation.navigate('Home');
-        } else {
-          console.log("Erro: Usuário inválido");
+      .then(response => {
+        console.log("Status da resposta: ", response.status); 
+        return response.text(); 
+      })
+      .then(text => {
+        console.log("Resposta do servidor (texto): ", text); 
+        
+        try {
+          const json = JSON.parse(text); 
+          console.log("Resposta do servidor (JSON): ", json);
+          if (json.mensagem === 'Usuário válido') {
+            navigation.navigate('home');
+          } else {
+            console.log("Erro: Usuário inválido");
+          }
+        } catch (error) {
+          console.error("Erro ao fazer parse do JSON: ", error);
         }
       })
       .catch((err) => {
         console.log("Erro ao verificar login: ", err);
       });
   };
+  
 
   return (
     <SafeAreaView style={styles.container}>

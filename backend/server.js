@@ -30,6 +30,17 @@ const execSQLQuery = (sqlQry, id, res) => {
     });
 };
 
+async function resultSQLQuery(sqlQry, id) {
+    const connection = await mysql.createConnection(db);
+    let [result] = await connection.promise().query(sqlQry, id);
+    try {
+        return result;
+    } catch (error) {
+        console.log("Erro: " + error);
+        throw error;
+    }
+};
+
 app.get('/', (req, res) => {
     res.send('Hello World!');
 });
@@ -44,96 +55,19 @@ app.get('/pets', (req, res) => {
     execSQLQuery("SELECT * from Pet", id, res);
 });
 
-app.get('/racas', (req, res) => {
-    const id = [];
-    execSQLQuery("SELECT * from Raca", id, res);
-});
-
-app.get('/parceiros', (req, res) => {
-    const id = [];
-    execSQLQuery("SELECT * from Parceiro", id, res);
-});
-
 app.post('/usuarios', (req, res) => {
     console.log('Recebendo requisição POST em /usuarios');
-    const { email, nomeUsuario, cpf, telefoneUsuario, senha, rua, cidade, bairro, numero, tipo, foto, data_nascimento, descricao } = req.body;
+    const { email, senha, nome, cpf, tipo, foto, data_nascimento, morada, latitude, longitude, usuario_tipo } = req.body;
     console.log('Dados recebidos:', req.body);
 
-    const id = [email, nomeUsuario, cpf, telefoneUsuario, senha, rua, cidade, bairro, numero, tipo, foto, data_nascimento, descricao];
-    const query = `INSERT INTO Usuario (email, nomeUsuario, cpf, telefoneUsuario, senha, rua, cidade, bairro, numero, tipo, foto, data_nascimento, descricao) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-
-    execSQLQuery(query, id, res);
-
-
-    
-
-});
-
-app.post('/pets', (req, res) => {
-    console.log('Recebendo requisição POST em /pets');
-    const { nomePet, tipoPet, raca, sexo, porte, dataNascimento } = req.body;
-    console.log('Dados recebidos:', req.body);
-
-    const id = [nomePet, tipoPet, raca, sexo, porte, dataNascimento];
-    const query = `INSERT INTO Pet (nomePet, tipoPet, raca, sexo, porte, dataNascimento) VALUES (?, ?, ?, ?, ?, ?)`;
+    const id = [email, senha, nome, cpf, tipo, foto, data_nascimento, morada, latitude, longitude, usuario_tipo];
+    const query = `
+        INSERT INTO Usuario (Email, Senha, Nome, CPF, Tipo, Foto, Data_nascimento, Morada, Latitude, Longitude, Usuario_TIPO)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
 
     execSQLQuery(query, id, res);
 });
-
-app.post('/racas', (req, res) => {
-    console.log('Recebendo requisição POST em /racas');
-    const { nomeRaca, porteRaca, comportamento, quantPelo } = req.body;
-    console.log('Dados recebidos:', req.body);
-
-    const id = [nomeRaca, porteRaca, comportamento, quantPelo];
-    const query = `INSERT INTO Raca (nomeRaca, porteRaca, comportamento, quantPelo) VALUES (?, ?, ?, ?)`;
-
-    execSQLQuery(query, id, res);
-});
-
-app.post('/parceiros', (req, res) => {
-    console.log('Recebendo requisição POST em /parceiros');
-    const { nomeParceiro, tipoParceiro, telefoneParceiro, local_parceiro } = req.body;
-    console.log('Dados recebidos:', req.body);
-
-    const id = [nomeParceiro, tipoParceiro, telefoneParceiro, local_parceiro];
-    const query = `INSERT INTO Parceiro (nomeParceiro, tipoParceiro, telefoneParceiro, local_parceiro) VALUES (?, ?, ?, ?)`;
-
-    execSQLQuery(query, id, res);
-});
-
-app.post('/anuncios', (req, res) => {
-    console.log('Recebendo requisição POST em /anuncios');
-    const { tipoAnuncio, dataAnuncio } = req.body;
-    console.log('Dados recebidos:', req.body);
-
-    const id = [tipoAnuncio, dataAnuncio];
-    const query = `INSERT INTO Anuncio (tipoAnuncio, dataAnuncio) VALUES (?, ?)`;
-
-    execSQLQuery(query, id, res);
-});
-
-app.post('/interesses', (req, res) => {
-    console.log('Recebendo requisição POST em /interesses');
-    const { idUsuario, idPet } = req.body;
-    console.log('Dados recebidos:', req.body);
-
-    const id = [idUsuario, idPet];
-    const query = `INSERT INTO Interesses (idUsuario, idPet) VALUES (?, ?)`;
-
-    execSQLQuery(query, id, res);
-});
-
-async function resultSQLQuery(sqlQry, id) {
-    const connection = await mysql.createConnection(db);
-    let [result] = await connection.promise().query(sqlQry, id);
-    try {
-        return result;
-    } catch (error) {
-        console.log("Erro: " + error);
-        throw error;
-    }
-}
 
 app.post('/login', async (req, res) => {
     const id = [req.body.email, req.body.senha];
@@ -148,8 +82,170 @@ app.post('/login', async (req, res) => {
     console.log("brilhou");
 });
 
-app.listen(port, () => {
-    console.log(`App escutando a porta ${port}`);
+app.post('/pets', (req, res) => {
+    console.log('Recebendo requisição POST em /pets');
+    const { tipo, raca, nome, sexo, data_nascimento, porte, comportamento, cidade, rua, fk_usuario_id, fk_raca_id } = req.body;
+    console.log('Dados recebidos:', req.body);
+
+    const id = [tipo, raca, nome, sexo, data_nascimento, porte, comportamento, cidade, rua, fk_usuario_id, fk_raca_id];
+    const query = `
+        INSERT INTO Pet (Tipo, Raca, Nome, Sexo, Data_Nascimento, Porte, Comportamento, Cidade, Rua, FK_Usuario_ID, FK_Raca_ID)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+
+    execSQLQuery(query, id, res);
 });
+
+app.post('/anuncios', (req, res) => {
+    console.log('Recebendo requisição POST em /anuncios');
+    const { tipo, fk_usuario_id, favorito } = req.body;
+    console.log('Dados recebidos:', req.body);
+
+    const id = [tipo, fk_usuario_id, favorito];
+    const query = `
+        INSERT INTO Anuncio (Tipo, FK_Usuario_ID, Favorito)
+        VALUES (?, ?, ?)
+    `;
+
+    execSQLQuery(query, id, res);
+});
+
+
+app.put('/anuncios/:id', (req, res) => {
+    const { tipo, favorito } = req.body;
+    const { id } = req.params;
+
+    console.log('Recebendo requisição PUT em /anuncios');
+    console.log('Dados recebidos:', req.body);
+
+    const query = `
+        UPDATE Anuncio
+        SET Tipo = ?, Favorito = ?
+        WHERE ID_Anuncio = ?
+    `;
+
+    const idParams = [tipo, favorito, id];
+    execSQLQuery(query, idParams, res);
+});
+
+app.delete('/anuncios/:id', (req, res) => {
+    const { id } = req.params;
+    console.log(`Deletando anúncio com ID: ${id}`);
+
+    const query = `
+        DELETE FROM Anuncio
+        WHERE ID_Anuncio = ?
+    `;
+
+    const idParams = [id];
+    execSQLQuery(query, idParams, res);
+});
+
+app.post('/parceiros', (req, res) => {
+    console.log('Recebendo requisição POST em /parceiros');
+    const { tipo, nome, telefone, local } = req.body;
+    console.log('Dados recebidos:', req.body);
+
+    const id = [tipo, nome, telefone, local];
+    const query = `
+        INSERT INTO Parceiro (Tipo, Nome, Telefone, Local)
+        VALUES (?, ?, ?, ?)
+    `;
+
+    execSQLQuery(query, id, res);
+});
+
+app.put('/parceiros/:id', (req, res) => {
+    const { tipo, nome, telefone, local } = req.body;
+    const { id } = req.params;
+
+    console.log('Recebendo requisição PUT em /parceiros');
+    console.log('Dados recebidos:', req.body);
+
+    const query = `
+        UPDATE Parceiro
+        SET Tipo = ?, Nome = ?, Telefone = ?, Local = ?
+        WHERE ID_Parceiro = ?
+    `;
+
+    const idParams = [tipo, nome, telefone, local, id];
+    execSQLQuery(query, idParams, res);
+});
+
+app.delete('/parceiros/:id', (req, res) => {
+    const { id } = req.params;
+    console.log(`Deletando parceiro com ID: ${id}`);
+
+    const query = `
+        DELETE FROM Parceiro
+        WHERE ID_Parceiro = ?
+    `;
+
+    const idParams = [id];
+    execSQLQuery(query, idParams, res);
+});
+
+app.post('/likes', (req, res) => {
+    console.log('Recebendo requisição POST em /likes');
+    const { idUsuario, idPet } = req.body;
+    console.log('Dados recebidos:', req.body);
+
+    const query = `
+        INSERT INTO Adota_Like (FK_Usuario_ID, FK_Pet_ID_Animal)
+        VALUES (?, ?)
+    `;
+    const idParams = [idUsuario, idPet];
+    
+    execSQLQuery(query, idParams, (result) => {
+        checkForMatch(idUsuario, idPet, res);
+    });
+});
+
+const checkForMatch = (idUsuario, idPet, res) => {
+    console.log(`Verificando se há match entre o usuário ${idUsuario} e o pet ${idPet}`);
+    
+    const query = `
+        SELECT * FROM Adota_Like 
+        WHERE FK_Usuario_ID = ? AND FK_Pet_ID_Animal = ?
+    `;
+    
+    execSQLQuery(query, [idPet, idUsuario], (result) => {
+        if (result.length > 0) {
+            console.log('Match encontrado!');
+
+            const matchQuery = `
+                UPDATE Adota_Like
+                SET DataMatch = ?
+                WHERE FK_Usuario_ID = ? AND FK_Pet_ID_Animal = ?
+            `;
+
+            const matchParams = [new Date(), idUsuario, idPet];
+            execSQLQuery(matchQuery, matchParams, (matchResult) => {
+                res.json({ message: "Match encontrado!", match: true });
+            });
+        } else {
+            res.json({ message: "Like registrado, mas sem match ainda.", match: false });
+        }
+    });
+};
+
+app.get('/matchs/:id', (req, res) => {
+    const id = req.params.id;
+    console.log(`Buscando matchs para o usuário com ID ${id}`);
+
+    const query = `
+        SELECT * FROM Adota_Like 
+        WHERE FK_Usuario_ID = ? AND DataMatch IS NOT NULL
+    `;
+
+    execSQLQuery(query, [id], res);
+});
+
+
+app.listen(port, () => {
+    console.log(`App escutando na porta ${port}`);
+});
+
+
 
 

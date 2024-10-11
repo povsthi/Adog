@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView, PermissionsAndroid, Platform } from 'react-native';
-import Geolocation from 'react-native-geolocation-service'; // Adiciona o geolocation
+import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView, Platform } from 'react-native';
+import * as Location from 'expo-location';
 import CustomTextInput from '../components/CustomTextInput';
 import RoundedButton from '../components/RoundedButton';
 
@@ -9,51 +9,46 @@ const SignUp = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [data, setDataNascimento] = useState('');
   const [cpf, setCpf] = useState('');
-  const [estado, setEstado] = useState('');
   const [senha, setSenha] = useState('');
   const [confirmarSenha, setConfirmarSenha] = useState('');
-  const [location, setLocation] = useState({ latitude: null, longitude: null }); 
+  const [location, setLocation] = useState({ latitude: null, longitude: null });
 
   useEffect(() => {
     requestLocationPermission();
   }, []);
 
   const requestLocationPermission = async () => {
-    if (Platform.OS === 'android') {
-      const granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-        {
-          title: 'Permissão de Localização',
-          message: 'Precisamos acessar sua localização para completar o cadastro.',
-          buttonNeutral: 'Pergunte-me depois',
-          buttonNegative: 'Cancelar',
-          buttonPositive: 'OK',
-        }
-      );
-      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-        getCurrentLocation();
-      } else {
-        Alert.alert('Erro', 'Permissão de localização negada.');
+    try {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Erro', 'Permissão de localização negada. Por favor, habilite as permissões de localização.');
+        return;
       }
-    } else {
+      const locationServicesEnabled = await Location.hasServicesEnabledAsync();
+      if (!locationServicesEnabled) {
+        Alert.alert('Erro', 'Os serviços de localização estão desativados. Habilite-os nas configurações do dispositivo.');
+        return;
+      }
       getCurrentLocation();
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Erro', 'Houve um problema ao solicitar permissões de localização.');
     }
   };
 
-  const getCurrentLocation = () => {
-    Geolocation.getCurrentPosition(
-      (position) => {
-        setLocation({
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-        });
-      },
-      (error) => {
-        console.error(error);
-        Alert.alert('Erro', 'Não foi possível obter sua localização.');
-      },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
-    );
+  const getCurrentLocation = async () => {
+    try {
+      const location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.High, 
+      });
+      setLocation({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      });
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Erro', 'Não foi possível obter sua localização. Verifique suas configurações de localização.');
+    }
   };
 
   const Cadastrar = () => {
@@ -61,17 +56,17 @@ const SignUp = ({ navigation }) => {
       Alert.alert('Erro', 'Todos os campos são obrigatórios!');
       return;
     }
-
+  
     if (senha !== confirmarSenha) {
       Alert.alert('Erro!', 'Senhas diferentes');
       return;
     }
-
-    const userObj = { nome, email, senha, latitude: location.latitude, longitude: location.longitude };
+  
+    const userObj = { nome, email, senha, cpf, latitude: location.latitude, longitude: location.longitude };
     const jsonBody = JSON.stringify(userObj);
     console.log(jsonBody);
-
-    fetch('http://localhost:3001/usuarios', {
+  
+    fetch('http://192.168.2.107:3001/usuarios', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -81,8 +76,13 @@ const SignUp = ({ navigation }) => {
     })
       .then((response) => response.json())
       .then((json) => {
-        console.log(json);
-        navigation.goBack();
+        console.log("Resposta do servidor:", json); // Verificar resposta
+        if (json.affectedRows && json.affectedRows > 0) {
+          console.log("Redirecionando para home...");
+          navigation.navigate('home'); // Navegação
+        } else {
+          Alert.alert('Erro', 'Falha no cadastro. Tente novamente.');
+        }
       })
       .catch((err) => {
         console.log(err);
@@ -123,5 +123,7 @@ const styles = StyleSheet.create({
 });
 
 export default SignUp;
+
+
 
 
