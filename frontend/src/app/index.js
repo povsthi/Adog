@@ -1,32 +1,25 @@
 import React, { useEffect } from 'react';
 import { View, Image, StyleSheet } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { useNavigation, useFocusEffect } from "@react-navigation/native"
-
-import SignIn from './SignIn';
+import { useRouter } from 'expo-router';
 
 const SplashScreen = () => {
-
-    const navigation = useNavigation();
+    const router = useRouter();
   
-    const handleNavigation = React.useCallback(() => {
-      const timer = setTimeout(() => {
-        navigation.navigate("signup");
-      }, 2000);
-  
-      return () => clearTimeout(timer);
-    }, [navigation]); 
-  
-    useFocusEffect(handleNavigation)
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            router.replace('/signup'); 
+        }, 2000);
+    
+        return () => clearTimeout(timer);
+    }, [router]);
 
     return (
-
         <LinearGradient colors={["#3085FF", "#212A75"]} style={styles.container}>
             <View style={styles.imageContainer}>
                 <Image source={require('../../assets/LogoAdog.png')} style={styles.logo} />
             </View>
         </LinearGradient>
-
     );
 };
 
@@ -35,18 +28,15 @@ const styles = StyleSheet.create({
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',   
-    
-      },
-      imageContainer: {
+    },
+    imageContainer: {
         alignItems: 'center',
-        justifyContent:   
-     'center',
-      },
+        justifyContent: 'center',
+    },
     logo: {
         width: 200,
         height: 200,
     },
-
 });
 
-export default SplashScreen;
+export default SplashScreen;

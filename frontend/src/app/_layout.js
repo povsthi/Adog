@@ -14,56 +14,26 @@ export default function Layout() {
         headerTintColor: "#FFF"
     }}>
         <Stack.Screen 
-          name="splash" 
-          component={SplashScreen} 
-          options={{ headerShown: false }} 
-        /> 
-        <Stack.Screen 
-          name="signup" 
-          component={SignUp} 
-          options={{
-            headerStyle: {
-              ...defaultScreenOptions.headerStyle,
-              paddingTop: 20,
-            },
-          }}
-        />
-        <Stack.Screen 
-          name="signin" 
-          component={SignIn} 
-        />
-        <Stack.Screen 
-          name="register" 
-          component={Register} 
-        />
-        <Stack.Screen 
-          name="home" 
-          component={Home} 
-          options={{
-            headerRight: () => <HeaderRightIcon name="bell" onPress={() => {}} />,
-          }}
-        />
-        <Stack.Screen 
-          name="notifications" 
-          component={Nots} 
-          options={{
-            headerRight: () => <HeaderRightIcon name="arrow-left" onPress={() => {}} />,
-          }}
-        />
-        <Stack.Screen
-          name="profilepet"
-          component={ProfilePet} 
-          options={{
-            headerRight: () => <HeaderRightIcon name="arrow-back" onPress={() => {}} />,
-          }}
-        />
-         <Stack.Screen 
-          name="settings" 
-          component={SettingsScreen} 
-          options={{
-            headerRight: () => <HeaderRightIcon name="bell" onPress={() => {}} />,
-          }}
-        />
+                name="index" 
+                options={{ headerShown: false }} 
+            />
+            <Stack.Screen 
+                name="signup" 
+                component={SignUp} 
+            />
+            <Stack.Screen 
+                name="signin" 
+                component={SignIn} 
+            />
+            <Stack.Screen 
+                name="dashboard" 
+                component={DashboardLayout} 
+                options={{ headerShown: false }} 
+            />
+            <Stack.Screen 
+                name="petprofile" 
+                component={ProfilePet} 
+            />
 
     </Stack>
   );

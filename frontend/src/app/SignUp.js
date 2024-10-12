@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import * as Location from 'expo-location';
 import CustomTextInput from '../components/CustomTextInput';
 import RoundedButton from '../components/RoundedButton';
+import { useRouter } from 'expo-router'; 
 
-const SignUp = ({ navigation }) => {
+const SignUp = () => {
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [data, setDataNascimento] = useState('');
@@ -12,6 +13,7 @@ const SignUp = ({ navigation }) => {
   const [senha, setSenha] = useState('');
   const [confirmarSenha, setConfirmarSenha] = useState('');
   const [location, setLocation] = useState({ latitude: null, longitude: null });
+  const router = useRouter();
 
   useEffect(() => {
     requestLocationPermission();
@@ -56,16 +58,16 @@ const SignUp = ({ navigation }) => {
       Alert.alert('Erro', 'Todos os campos são obrigatórios!');
       return;
     }
-  
+
     if (senha !== confirmarSenha) {
       Alert.alert('Erro!', 'Senhas diferentes');
       return;
     }
-  
+
     const userObj = { nome, email, senha, cpf, latitude: location.latitude, longitude: location.longitude };
     const jsonBody = JSON.stringify(userObj);
     console.log(jsonBody);
-  
+
     fetch('http://192.168.2.107:3001/usuarios', {
       method: 'POST',
       headers: {
@@ -76,10 +78,10 @@ const SignUp = ({ navigation }) => {
     })
       .then((response) => response.json())
       .then((json) => {
-        console.log("Resposta do servidor:", json); 
+        console.log("Resposta do servidor:", json);
         if (json.affectedRows && json.affectedRows > 0) {
           console.log("Redirecionando para home...");
-          navigation.navigate("home"); 
+          router.replace('/dashboard'); 
         } else {
           Alert.alert('Erro', 'Falha no cadastro. Tente novamente.');
         }
@@ -99,7 +101,7 @@ const SignUp = ({ navigation }) => {
         <CustomTextInput label="Senha" placeholder="Digite sua senha" value={senha} onChangeText={setSenha} secureTextEntry />
         <CustomTextInput label="Confirmar Senha" placeholder="Confirme sua senha" value={confirmarSenha} onChangeText={setConfirmarSenha} secureTextEntry />
         <RoundedButton title="Cadastrar" onPress={Cadastrar} />
-        <TouchableOpacity onPress={() => navigation.navigate("signin")}>
+        <TouchableOpacity onPress={() => router.push('/signin')}> 
           <Text style={styles.signInText}>Já tenho conta</Text>
         </TouchableOpacity>
       </ScrollView>
@@ -123,7 +125,4 @@ const styles = StyleSheet.create({
 });
 
 export default SignUp;
-
-
-
 

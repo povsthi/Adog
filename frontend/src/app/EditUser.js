@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from 'react-native';
-import ImageUploader from './ImageUploader'; // Importa o seu componente de upload de imagem
+import ImageUploader from './ImageUploader'; 
 
 const EditUser = ({ navigation, route }) => {
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
-  const [photoUrl, setPhotoUrl] = useState(null); // URL da imagem
+  const [photoUrl, setPhotoUrl] = useState(null); 
   const { idUsuario } = route.params;
 
   useEffect(() => {
@@ -21,7 +21,7 @@ const EditUser = ({ navigation, route }) => {
         if (resJson.length > 0) {
           setNome(resJson[0].nome);
           setEmail(resJson[0].email);
-          setPhotoUrl(resJson[0].photoUrl); // Foto existente
+          setPhotoUrl(resJson[0].photoUrl);
         }
       } catch (e) {
         console.log("Erro ao buscar usuário:", e);
@@ -31,11 +31,11 @@ const EditUser = ({ navigation, route }) => {
   }, [idUsuario]);
 
   const handleImageUpload = (url) => {
-    setPhotoUrl(url); // Atualiza a URL da foto quando o upload é feito
+    setPhotoUrl(url); 
   };
 
   const Atualizar = async () => {
-    var userObj = { nome: nome, email: email, senha: senha, photoUrl: photoUrl }; // Inclui o photoUrl
+    var userObj = { nome: nome, email: email, senha: senha, photoUrl: photoUrl }; 
     var jsonBody = JSON.stringify(userObj);
     try {
       let response = await fetch(`http://localhost:3000/usuarios/${idUsuario}`, {
@@ -55,7 +55,7 @@ const EditUser = ({ navigation, route }) => {
 
   return (
     <View style={styles.container}>
-      <ImageUploader onImageUpload={handleImageUpload} /> {/* Aqui está o ImageUploader */}
+      <ImageUploader onImageUpload={handleImageUpload} /> 
 
       {photoUrl ? (
         <Image source={{ uri: photoUrl }} style={styles.profileImage} />
