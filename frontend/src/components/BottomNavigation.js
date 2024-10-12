@@ -4,7 +4,7 @@ import { Ionicons, Feather } from '@expo/vector-icons';
 
 import Home from '../app/Home'; 
 import Search from '../app/SearchScreen';
-import AddPet from '../app/AddPet';
+import AddPet from '../app/dashboard/AddPet';
 import Favorites from '../app/Favorites';
 import SettingsScreen from '../app/Settings';
 

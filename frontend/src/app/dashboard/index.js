@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, ScrollView, StyleSheet } from 'react-native';
-import PetCard from '../components/PetCard';
-import BottomNavigation from '../components/BottomNavigation';
+import PetCard from '../../components/PetCard';
+import BottomNavigation from '../../components/BottomNavigation';
 
 const Home = () => {
   const [pets, setPets] = useState([]);
