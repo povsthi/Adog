@@ -57,7 +57,7 @@ const AddPet = () => {
     }
 
     try {
-      const response = await fetch('http://192.168.7.2:3001/pets', {
+      const response = await fetch('http://192.168.2.107:3001/pets', {
         method: 'POST',
         headers: {
           'Content-Type': 'multipart/form-data',

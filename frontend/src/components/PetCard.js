@@ -1,18 +1,19 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
-import { Ionicons, Feather } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 
 const PetCard = ({ pet }) => {
-  const imageSource = pet.image ? { uri: `../assets/images/${pet.image}` } : null;
-    return (
-        <View style = {styles.card}>
-            {imageSource && <Image source={imageSource} style={styles.image} />}
-            <View style = {styles.info}>
-              <Text style={styles.nome}>{pet.nome}</Text>
-              <Text style={styles.raca}>{pet.raca}</Text>
-              <Text style={styles.localizacao}>{pet.localizacao}</Text>
-              <Text style={styles.distancia}><Ionicons name="location-sharp" size={16} /> Está a 17 km</Text>
-           </View>
+  const imageSource = pet.foto ? { uri: `http://192.168.2.107:3001/uploads/${pet.foto}` } : null;
+
+  return (
+    <View style={styles.card}>
+      {imageSource && <Image source={imageSource} style={styles.image} />}
+      <View style={styles.info}>
+        <Text style={styles.nome}>{pet.nome}</Text>
+        <Text style={styles.raca}>{pet.raca}</Text>
+        <Text style={styles.localizacao}>{pet.cidade}</Text>
+        <Text style={styles.distancia}><Ionicons name="location-sharp" size={16} /> Está a {pet.distancia || 'desconhecida'} km</Text>
+      </View>
     </View>
   );
 };
