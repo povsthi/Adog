@@ -1,29 +1,18 @@
 import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
-import SignUp from './screens/SignUp';
-import SignIn from './screens/SignIn'; 
-import Home from './screens/Home';
-import ProfilePet from './screens/ProfilePet'; 
-import Nots from './screens/Notfications'
-import { HeaderLogo, HeaderRightIcon } from './components/Header'; 
-import SplashScreen from './screens/SplashScreen';
-import SettingsScreen from './screens/Settings';
-import Register from './screens/Register';
+import { Stack } from 'expo-router'
+import { HeaderLogo, HeaderRightIcon } from '../components/Header'; 
 
-const Stack = createStackNavigator();
-
-const defaultScreenOptions = {
-  headerTitle: () => <HeaderLogo />,
-  headerStyle: {
-    backgroundColor: '#212A75',
-  },
-};
-
-function Routes() {
+export default function Layout() {
   return (
-    <NavigationContainer>
-      <Stack.Navigator initialRouteName="Splash" screenOptions={defaultScreenOptions}>
+    <Stack
+    screenOptions={{
+        headerTitle: () => <HeaderLogo />,
+        headerStyle: {
+            backgroundColor: '#212A75',
+        },
+        
+        headerTintColor: "#FFF"
+    }}>
         <Stack.Screen 
           name="splash" 
           component={SplashScreen} 
@@ -75,11 +64,8 @@ function Routes() {
             headerRight: () => <HeaderRightIcon name="bell" onPress={() => {}} />,
           }}
         />
-      </Stack.Navigator>
-    </NavigationContainer>
+
+    </Stack>
   );
 }
-
-export default Routes;
-
 

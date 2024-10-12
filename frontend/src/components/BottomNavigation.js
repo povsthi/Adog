@@ -2,11 +2,11 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons, Feather } from '@expo/vector-icons';
 
-import Home from '../screens/Home'; 
-import Search from '../screens/SearchScreen';
-import AddPet from '../screens/AddPet';
-import Favorites from '../screens/Favorites';
-import SettingsScreen from '../screens/Settings';
+import Home from '../app/Home'; 
+import Search from '../app/SearchScreen';
+import AddPet from '../app/AddPet';
+import Favorites from '../app/Favorites';
+import SettingsScreen from '../app/Settings';
 
 const Tab = createBottomTabNavigator();
 

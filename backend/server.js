@@ -21,13 +21,15 @@ const db = {
 
 const execSQLQuery = (sqlQry, id, res) => {
     const connection = mysql.createConnection(db);
-    connection.query(sqlQry, id, (error, results, fields) => {
+    connection.connect(); 
+
+    connection.query(sqlQry, id, (error, results) => {
         if (error) {
-            res.json(error);
+            res.status(500).json({ error: 'Erro ao executar a consulta SQL' });
         } else {
             res.json(results);
         }
-        connection.end();
+        connection.end(); 
         console.log('Executou: execSQLQuery');
     });
 };
