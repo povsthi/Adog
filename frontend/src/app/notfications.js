@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, FlatList, StyleSheet } from 'react-native';
-import NotCard from '../../components/NotCard';
+import NotCard from '../components/NotCard';
 
 const Notification = () => {
   const [notificacoes, setNotificacoes] = useState([

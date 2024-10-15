@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { View, TouchableOpacity, Text, StyleSheet, Image } from 'react-native';
-import BottomNavigation from '../../components/BottomNavigation';
 import CustomTextInput from '../../components/CustomTextInput';
 import RNPickerSelect from 'react-native-picker-select';
 import { launchImageLibrary } from 'react-native-image-picker';
@@ -127,7 +126,7 @@ const AddPet = () => {
         <Text style={styles.button}>Cadastrar</Text>
       </TouchableOpacity>
 
-      <BottomNavigation />
+      
     </View>
   );
 };

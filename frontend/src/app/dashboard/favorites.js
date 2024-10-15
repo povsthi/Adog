@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, ScrollView, StyleSheet } from 'react-native';
 import PetCard from '../../components/PetCard';
-import BottomNavigation from '../../components/BottomNavigation';
+
 
 
 const pets = [
@@ -44,7 +44,7 @@ const Favorites = () => {
           <PetCard key={index} pet={pet} />
         ))}
       </ScrollView>
-      <BottomNavigation />
+      
     </View>
   );
 };

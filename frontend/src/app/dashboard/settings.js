@@ -1,7 +1,6 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons, FontAwesome, Entypo } from '@expo/vector-icons';
-import BottomNavigation from '../components/BottomNavigation'
 
 const SettingsScreen = () => {
   return (
@@ -9,7 +8,7 @@ const SettingsScreen = () => {
 
       <View style={styles.profileContainer}>
         <Image
-         source={require('../../assets/ThiagoImage.jpg')} 
+         source={require('../../../assets/ThiagoImage.jpg')} 
           style={styles.profileImage}
         />
         <Text style={styles.profileName}>Thiago Garcia Talarico</Text>

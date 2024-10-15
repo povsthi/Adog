@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from 'react-native';
-import ImageUploader from './ImageUploader'; 
+import ImageUploader from '../components/ImageUploader'; 
 
 const EditUser = ({ navigation, route }) => {
   const [nome, setNome] = useState('');

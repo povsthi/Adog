@@ -4,14 +4,27 @@ import { Ionicons, Feather } from '@expo/vector-icons';
 
 const UserCard = ({ usuario }) => {
   const imageSource = usuario.image ? { uri: `../assets/images/${pet.image}` } : null;
+
+  const calcularIdade = (dataNascimento) => {
+    const nascimento = new Date(dataNascimento);
+    const hoje = new Date();
+    let idade = hoje.getFullYear() - nascimento.getFullYear();
+    const mes = hoje.getMonth() - nascimento.getMonth();
+  
+    if (mes < 0 || (mes === 0 && hoje.getDate() < nascimento.getDate())) {
+      idade--;
+    }
+    return idade;
+  };
+
     return (
         <View style = {styles.card}>
             {imageSource && <Image source={imageSource} style={styles.image} />}
             <View style = {styles.info}>
               <Text style={styles.nome}>{usuario.nome}</Text>
               <Text style={styles.idade}>{usuario.idade}</Text>
-              <Text style={styles.localizacao}>{usuario.localizacao}</Text>
-              <Text style={styles.distancia}><Ionicons name="location-sharp" size={16} /> Está a 17 km</Text>
+              <Text style={styles.idade}>Idade: {calcularIdade(usuario.data_nascimento)} anos</Text>
+              
            </View>
     </View>
   );
@@ -50,4 +63,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default PetCard;
+export default UserCard;

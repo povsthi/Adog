@@ -27,7 +27,7 @@ export default function Layout() {
         }}
       />
       <Tabs.Screen
-        name="add-pet" 
+        name="addpet" 
         options={{
           headerShown: false,
           title: "Adicionar Pet",
