@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
-import { Header } from '../components/Header';
 
-const AddRegistration = () => {
+
+const AddAnounce = () => {
   const [nomeAnuncio, setNomeAnuncio] = useState('');
   const [localizacao, setLocalizacao] = useState('');
   const [contato, setContato] = useState('');
@@ -23,7 +23,7 @@ const AddRegistration = () => {
           <Text style={styles.backButton}>{"<"}</Text>
         </TouchableOpacity>
         <Image 
-          source={require('./assets/LogoAdog.png')}  necessário
+          source={require('../../assets/LogoAdog.png')}  necessário
           style={styles.logo} 
           resizeMode="contain"
         />
@@ -135,5 +135,5 @@ const styles = StyleSheet.create({
   },
 });
 
-export default addregistration;
+export default AddAnounce;
 

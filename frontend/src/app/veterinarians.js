@@ -65,7 +65,7 @@ const VeterinariansScreen = () => {
         
         {}
         <Image 
-          source={require('./assets/LogoAdog.png')} 
+          source={require('../../assets/LogoAdog.png')} 
           style={styles.logo} 
           resizeMode="contain"
         />
@@ -166,4 +166,4 @@ const styles = StyleSheet.create({
   },
 })
 
-export default Veterinarians;
+export default VeterinariansScreen;

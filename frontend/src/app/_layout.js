@@ -48,6 +48,12 @@ export default function Layout() {
       <Stack.Screen 
         name="notifications" 
       />
+      <Stack.Screen 
+        name="addanounce" 
+      />
+      <Stack.Screen 
+        name="veterinarians" 
+      />
     </Stack>
   );
 }
