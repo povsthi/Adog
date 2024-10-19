@@ -13,7 +13,7 @@ const SignIn = () => {
     var userObj = { email: email, senha: senha };
     var jsonBody = JSON.stringify(userObj);
 
-    fetch('http://192.168.2.107:3001/login', {
+    fetch('http://192.168.2.105:3001/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -80,10 +80,10 @@ const styles = StyleSheet.create({
     borderColor: '#000000', 
     borderWidth: 1, 
     borderRadius: 10, 
-    padding: 20,
+    padding: 100,
     backgroundColor: '#F7F7F7', 
     width: '100%',
-    maxWidth: 400, 
+    maxWidth: 350, 
   },
   signUpText: {
     marginTop: 20,

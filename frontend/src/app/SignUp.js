@@ -5,7 +5,6 @@ import CustomTextInput from '../components/CustomTextInput';
 import RoundedButton from '../components/RoundedButton';
 import Label from '../components/Label';
 import { useRouter } from 'expo-router';
-import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { Ionicons } from '@expo/vector-icons';
 
 const SignUp = () => {
@@ -18,7 +17,6 @@ const SignUp = () => {
   const [moradia, setMoradia] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [location, setLocation] = useState({ latitude: null, longitude: null });
-  const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -47,7 +45,6 @@ const SignUp = () => {
   const formatCPF = (text) => {
     let cpf = text.replace(/\D/g, '');
 
-    
     if (cpf.length > 11) {
         cpf = cpf.slice(0, 11);
     }
@@ -56,8 +53,21 @@ const SignUp = () => {
     cpf = cpf.replace(/(\d{3})(\d)/, '$1.$2');
     cpf = cpf.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
 
-    return cpf;
-    };
+    return cpf;
+  };
+
+  const formatData = (text) => {
+    let data = text.replace(/\D/g, '');
+
+    if (data.length > 8) {
+      data = data.slice(0, 8);
+    }
+
+    data = data.replace(/(\d{2})(\d)/, '$1/$2');
+    data = data.replace(/(\d{2})(\d)/, '$1/$2');
+
+    return data;
+  };
 
   const getCurrentLocation = async () => {
     try {
@@ -89,7 +99,7 @@ const SignUp = () => {
     const jsonBody = JSON.stringify(userObj);
     console.log(jsonBody);
 
-    fetch('http://192.168.2.107:3001/usuarios', {
+    fetch('http://192.168.2.105:3001/usuarios', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -124,23 +134,7 @@ const SignUp = () => {
           <CustomTextInput placeholder="Digite seu e-mail" value={email} onChangeText={setEmail} />
 
           <Label text="Data de Nascimento" />
-          <TouchableOpacity onPress={() => setDatePickerVisibility(true)}>
-            <TextInput
-              style={styles.input}
-              placeholder="Data de Nascimento"
-              value={data}
-              editable={false}
-            />
-          </TouchableOpacity>
-          <DateTimePickerModal
-            isVisible={isDatePickerVisible}
-            mode="date"
-            onConfirm={(date) => {
-              setDataNascimento(date.toISOString().split('T')[0]);
-              setDatePickerVisibility(false);
-            }}
-            onCancel={() => setDatePickerVisibility(false)}
-          />
+          <CustomTextInput placeholder="DD/MM/AAAA" value={data} onChangeText={text => setDataNascimento(formatData(text))} />
 
           <Label text="Tipo de Moradia" />
           <TouchableOpacity onPress={() => setMoradia('Casa')}>
@@ -151,8 +145,7 @@ const SignUp = () => {
           </TouchableOpacity>
 
           <Label text="CPF" />
-          <CustomTextInput placeholder="Digite seu CPF" value={cpf} onChangeText={text => setCpf(formatCPF(text))}
- />
+          <CustomTextInput placeholder="Digite seu CPF" value={cpf} onChangeText={text => setCpf(formatCPF(text))} />
 
           <Label text="Senha" />
           <CustomTextInput
@@ -182,7 +175,6 @@ const SignUp = () => {
           </View>
         </ScrollView>
       </View>
-  
   );
 };
 
