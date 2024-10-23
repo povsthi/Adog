@@ -1,30 +1,37 @@
-import React from 'react';
-import { View, Text, Image, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, Text, Image, StyleSheet, Dimensions, TouchableOpacity, Alert } from 'react-native';
 import Carousel from 'react-native-reanimated-carousel';
 import { Feather, Ionicons } from '@expo/vector-icons';
+import axios from 'axios'; 
 
 const { width } = Dimensions.get('window');
 
-const pet = {
-  nome: 'Pipoca',
-  idade: '3 meses',
-  peso: '7 Kg',
-  porte: 'Grande',
-  raca: 'Golden Retriever',
-  sexo: 'Fêmea',
-  localizacao: 'Cataguases-MG',
-  temperamento: 'Muito dócil',
-  imagens: [
-    require('../../assets/Pipoca1.jpg'), 
-    require('../../assets/Pipoca2.jpg'),
-    require('../../assets/Pipoca3.jpg'),
-  ],
-};
+const ProfilePet = ({ route, navigation }) => {
+  const { pet } = route.params; 
 
-const ProfilePet = () => {
   const renderImage = ({ item }) => (
     <Image source={item} style={styles.petImage} />
   );
+
+  const handleFavorite = async () => {
+    try {
+      await axios.post('http://seu-endpoint/favoritas', {
+        FK_Pet_ID_Animal: pet.ID_Animal, 
+        FK_Usuario_ID: 'user-id-aqui', 
+      });
+      Alert.alert('Favorito', `${pet.nome} adicionado aos favoritos!`);
+    } catch (error) {
+      Alert.alert('Erro', 'Não foi possível adicionar aos favoritos.');
+    }
+  };
+
+  const handleLike = async () => {
+    Alert.alert('Like', `${pet.nome} foi curtido!`);
+  };
+
+  const handleBack = () => {
+    navigation.goBack(); 
+  };
 
   return (
     <View style={styles.container}>
@@ -51,16 +58,13 @@ const ProfilePet = () => {
       </View>
 
       <View style={styles.navigationContainer}>
-        <TouchableOpacity>
-          <Feather name="rotate-cw" size={32} color="#000" />
-        </TouchableOpacity>
-        <TouchableOpacity>
-          <Ionicons name="star-outline" size={32} color="#000" />
-        </TouchableOpacity>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={handleLike}>
           <Ionicons name="heart-outline" size={32} color="#000" />
         </TouchableOpacity>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={handleFavorite}>
+          <Ionicons name="star-outline" size={32} color="#000" />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={handleBack}>
           <Feather name="x" size={32} color="#000" />
         </TouchableOpacity>
       </View>
@@ -107,6 +111,7 @@ const styles = StyleSheet.create({
 });
 
 export default ProfilePet;
+
 
 
 

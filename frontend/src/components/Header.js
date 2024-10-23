@@ -14,9 +14,8 @@ const HeaderRightIcon = ({ name, onPress }) => (
 
 const styles = StyleSheet.create({
   logo: {
-    width: 70,
-    height: 70,
-    marginBottom: 10,
+    width: 60,
+    height: 60
   },
   headerRight: {
     marginRight: 15,

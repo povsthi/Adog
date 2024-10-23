@@ -2,17 +2,6 @@ import React from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-const calcularIdade = (dataNascimento) => {
-  const nascimento = new Date(dataNascimento);
-  const hoje = new Date();
-  let idade = hoje.getFullYear() - nascimento.getFullYear();
-  const mes = hoje.getMonth() - nascimento.getMonth();
-
-  if (mes < 0 || (mes === 0 && hoje.getDate() < nascimento.getDate())) {
-    idade--;
-  }
-  return idade;
-};
 
 const PetCard = ({ pet }) => {
   const imageSource = pet.foto ? { uri: `http://192.168.2.107:3001/uploads/${pet.foto}` } : null;
@@ -24,7 +13,7 @@ const PetCard = ({ pet }) => {
         <Text style={styles.nome}>{pet.nome}</Text>
         <Text style={styles.raca}>{pet.raca}</Text>
         <Text style={styles.comportamento}>Comportamento: {pet.comportamento || 'Desconhecido'}</Text>
-        <Text style={styles.idade}>Idade: {calcularIdade(pet.dataNascimento)} anos</Text>
+        <Text style={styles.idade}>{pet.idade}</Text>
         <Text style={styles.localizacao}>{pet.cidade}</Text>
         
       </View>

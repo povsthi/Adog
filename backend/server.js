@@ -100,15 +100,15 @@ const storage = multer.diskStorage({
   app.post('/pets', upload.single('foto'), (req, res) => {
     console.log('Recebendo requisição POST em /pets');
     const {
-      tipo, raca, nome, sexo, data_nascimento, porte, comportamento, cidade, rua, fk_usuario_id, fk_raca_id
+      tipo, raca, nome, sexo, idade, porte, comportamento, cidade, rua, fk_usuario_id, fk_raca_id
     } = req.body;
   
     const foto = req.file ? req.file.filename : null; 
   
-    const petData = [tipo, raca, nome, sexo, data_nascimento, porte, comportamento, cidade, rua, fk_usuario_id, fk_raca_id];
+    const petData = [tipo, raca, nome, sexo, idade, porte, comportamento, cidade, rua, fk_usuario_id, fk_raca_id];
   
     const petQuery = `
-      INSERT INTO Pet (Tipo, Raca, Nome, Sexo, Data_Nascimento, Porte, Comportamento, Cidade, Rua, FK_Usuario_ID, FK_Raca_ID)
+      INSERT INTO Pet (Tipo, Raca, Nome, Sexo, Idade, Porte, Comportamento, Cidade, Rua, FK_Usuario_ID, FK_Raca_ID)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
   
@@ -131,12 +131,12 @@ const storage = multer.diskStorage({
 
 app.post('/anuncios', (req, res) => {
     console.log('Recebendo requisição POST em /anuncios');
-    const { tipo, fk_usuario_id, favorito } = req.body;
+    const { tipo, nomeParceiro, urlFoto, telefone, ruaParceiro, numeroParceiro, fkUsuarioId } = req.body;
     console.log('Dados recebidos:', req.body);
 
-    const id = [tipo, fk_usuario_id, favorito];
+    const id = [tipo, nomeParceiro, urlFoto, telefone, ruaParceiro, numeroParceiro, fkUsuarioId ];
     const query = `
-        INSERT INTO Anuncio (Tipo, FK_Usuario_ID, Favorito)
+        INSERT INTO Anuncio (Tipo, NomeParceiro, urlFoto, telefone, ruaParceiro, numeroParceiro, FK_Usuario_ID)
         VALUES (?, ?, ?)
     `;
 
@@ -145,7 +145,7 @@ app.post('/anuncios', (req, res) => {
 
 
 app.put('/anuncios/:id', (req, res) => {
-    const { tipo, favorito } = req.body;
+    const { tipo, favorito, nomeParceiro, urlFoto, telefone, ruaParceiro, numeroParceiro } = req.body;
     const { id } = req.params;
 
     console.log('Recebendo requisição PUT em /anuncios');
@@ -153,13 +153,14 @@ app.put('/anuncios/:id', (req, res) => {
 
     const query = `
         UPDATE Anuncio
-        SET Tipo = ?, Favorito = ?
+        SET Tipo = ?, Favorito = ?, NomeParceiro = ?, urlFoto = ?, telefone = ?, ruaParceiro = ?, numeroParceiro = ?
         WHERE ID_Anuncio = ?
     `;
 
-    const idParams = [tipo, favorito, id];
+    const idParams = [tipo, favorito, nomeParceiro, urlFoto, telefone, ruaParceiro, numeroParceiro, id];
     execSQLQuery(query, idParams, res);
 });
+
 
 app.delete('/anuncios/:id', (req, res) => {
     const { id } = req.params;
@@ -168,50 +169,6 @@ app.delete('/anuncios/:id', (req, res) => {
     const query = `
         DELETE FROM Anuncio
         WHERE ID_Anuncio = ?
-    `;
-
-    const idParams = [id];
-    execSQLQuery(query, idParams, res);
-});
-
-app.post('/parceiros', (req, res) => {
-    console.log('Recebendo requisição POST em /parceiros');
-    const { tipo, nome, telefone, local } = req.body;
-    console.log('Dados recebidos:', req.body);
-
-    const id = [tipo, nome, telefone, local];
-    const query = `
-        INSERT INTO Parceiro (Tipo, Nome, Telefone, Local)
-        VALUES (?, ?, ?, ?)
-    `;
-
-    execSQLQuery(query, id, res);
-});
-
-app.put('/parceiros/:id', (req, res) => {
-    const { tipo, nome, telefone, local } = req.body;
-    const { id } = req.params;
-
-    console.log('Recebendo requisição PUT em /parceiros');
-    console.log('Dados recebidos:', req.body);
-
-    const query = `
-        UPDATE Parceiro
-        SET Tipo = ?, Nome = ?, Telefone = ?, Local = ?
-        WHERE ID_Parceiro = ?
-    `;
-
-    const idParams = [tipo, nome, telefone, local, id];
-    execSQLQuery(query, idParams, res);
-});
-
-app.delete('/parceiros/:id', (req, res) => {
-    const { id } = req.params;
-    console.log(`Deletando parceiro com ID: ${id}`);
-
-    const query = `
-        DELETE FROM Parceiro
-        WHERE ID_Parceiro = ?
     `;
 
     const idParams = [id];
@@ -274,6 +231,35 @@ app.get('/matchs/:id', (req, res) => {
     execSQLQuery(query, [id], res);
 });
 
+app.post('/favoritas', (req, res) => {
+    const { FK_Pet_ID_Animal, FK_Usuario_ID } = req.body;
+
+    console.log('Recebendo requisição POST em /favoritas');
+    console.log('Dados recebidos:', req.body);
+
+    const query = `
+        INSERT INTO Favorita (FK_Pet_ID_Animal, FK_Usuario_ID)
+        VALUES (?, ?)
+    `;
+
+    const params = [FK_Pet_ID_Animal, FK_Usuario_ID];
+    execSQLQuery(query, params, res);
+});
+
+app.delete('/favoritas/:id', (req, res) => {
+    const { id } = req.params;
+
+    console.log('Recebendo requisição DELETE em /favoritas');
+    console.log('ID do favorito a ser removido:', id);
+
+    const query = `
+        DELETE FROM Favorita
+        WHERE IDFavorito = ?
+    `;
+
+    const params = [id];
+    execSQLQuery(query, params, res);
+});
 
 app.listen(port, () => {
     console.log(`App escutando na porta ${port}`);

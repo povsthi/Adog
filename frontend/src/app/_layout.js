@@ -15,11 +15,16 @@ export default function Layout() {
   return (
     <Stack
       screenOptions={{
-        headerTitle: () => <HeaderLogo />,
+        headerTitle: props => <HeaderLogo {...props} />,
         headerStyle: {
           backgroundColor: '#212A75',
         },
-        headerTintColor: '#FFF',
+      
+        contentStyle: {
+          paddingTop: 20,
+          backgroundColor: '#212A75'
+        },
+        headerTransparent: false
       }}
     >
       <Stack.Screen 
@@ -34,6 +39,13 @@ export default function Layout() {
       />
       <Stack.Screen 
         name="signup" 
+        options ={{
+          
+          headerTitleStyle: {
+            marginTop: 100,
+            padding: 100
+          }
+        }}
       />
       <Stack.Screen 
         name="signin" 

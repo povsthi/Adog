@@ -2,61 +2,43 @@ import React from 'react';
 import { View, ScrollView, StyleSheet } from 'react-native';
 import PetCard from '../../components/PetCard';
 
+const FavoritosScreen = ({ userId }) => {
+  const [favoritos, setFavoritos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
+  useEffect(() => {
+      const fetchFavoritos = async () => {
+          try {
+              const response = await axios.get(`http://seu-endpoint/favoritas/${userId}`);
+              setFavoritos(response.data); 
+          } catch (err) {
+              setError(err.message);
+          } finally {
+              setLoading(false);
+          }
+      };
 
-const pets = [
-  {
-    nome: 'Logan',
-    raca: 'Vira-lata',
-    localizacao: 'Cataguases-MG',
-    distance: '23 km',
-    image: 'images.jpeg',
-  },
-  {
-    nome: 'Pantera',
-    raca: 'Pastor Alemão',
-    localizacao: 'Leopoldina-MG',
-    distancia: '5 km',
-    image: 'images.jpeg',
-  },
-  {
-    nome: 'Lya',
-    raca: 'Golden Retriever',
-    localizacao: 'Vista Alegre-MG',
-    distancia: '16.3 km',
-    image: 'images.jpeg',
-  },
-  {
-    nome: 'Max',
-    raca: 'Persa',
-    localizacao: 'Leopoldina-MG',
-    distancia: '16.3 km',
-    image: 'images.jpeg',
-  },
-];
+      fetchFavoritos();
+  }, [userId]);
 
-const Favorites = () => {
+  if (loading) {
+      return <ActivityIndicator size="large" color="#0000ff" />;
+  }
+
+  if (error) {
+      return <Text>Error: {error}</Text>;
+  }
+
   return (
-    <View style={styles.container}>
-      
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        {pets.map((pet, index) => (
-          <PetCard key={index} pet={pet} />
-        ))}
-      </ScrollView>
-      
-    </View>
+      <View style={{ flex: 1, padding: 10 }}>
+          <FlatList
+              data={favoritos}
+              keyExtractor={(item) => item.ID_Animal.toString()} 
+              renderItem={({ item }) => <PetCard pet={item} />} 
+          />
+      </View>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  scrollContainer: {
-    padding: 15,
-  },
-});
-
-export default Favorites;
+export default FavoritosScreen;
