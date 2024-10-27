@@ -99,7 +99,7 @@ const SignUp = () => {
     const jsonBody = JSON.stringify(userObj);
     console.log(jsonBody);
 
-    fetch('http://192.168.2.105:3001/usuarios', {
+    fetch('http://192.168.3.29:3001/usuarios', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -13,7 +13,7 @@ const SignIn = () => {
     var userObj = { email: email, senha: senha };
     var jsonBody = JSON.stringify(userObj);
 
-    fetch('http://192.168.2.105:3001/login', {
+    fetch('http://192.168.3.29:3001/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
