@@ -1,13 +1,13 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { View, Text, Image, StyleSheet, Dimensions, TouchableOpacity, Alert } from 'react-native';
 import Carousel from 'react-native-reanimated-carousel';
 import { Feather, Ionicons } from '@expo/vector-icons';
-import axios from 'axios'; 
+import { useRouter } from 'expo-router';
 
 const { width } = Dimensions.get('window');
 
-const ProfilePet = ({ route, navigation }) => {
-  const { pet } = route.params; 
+const ProfilePet = ({ route }) => {
+  const { pet } = route.params;
 
   const renderImage = ({ item }) => (
     <Image source={item} style={styles.petImage} />
@@ -15,18 +15,34 @@ const ProfilePet = ({ route, navigation }) => {
 
   const handleFavorite = async () => {
     try {
-      await axios.post('http://seu-endpoint/favoritas', {
+      const response = await axios.post('http://http:///favoritas', {
         FK_Pet_ID_Animal: pet.ID_Animal, 
-        FK_Usuario_ID: 'user-id-aqui', 
+        FK_Usuario_ID: 'user-id-aqui',  
       });
-      Alert.alert('Favorito', `${pet.nome} adicionado aos favoritos!`);
+      if (response.status === 200) {
+        Alert.alert('Favorito', `${pet.nome} foi adicionado aos favoritos!`);
+      } else {
+        throw new Error('Falha ao favoritar');
+      }
     } catch (error) {
       Alert.alert('Erro', 'Não foi possível adicionar aos favoritos.');
     }
   };
 
   const handleLike = async () => {
-    Alert.alert('Like', `${pet.nome} foi curtido!`);
+    try {
+      const response = await axios.post('http://http:///likes', {
+        FK_Pet_ID_Animal: pet.ID_Animal, 
+        FK_Usuario_ID: 'user-id-aqui',  
+      });
+      if (response.status === 200) {
+        Alert.alert('Like', `Você curtiu ${pet.nome}!`);
+      } else {
+        throw new Error('Falha ao curtir');
+      }
+    } catch (error) {
+      Alert.alert('Erro', 'Não foi possível curtir o pet.');
+    }
   };
 
   const handleBack = () => {
@@ -111,6 +127,7 @@ const styles = StyleSheet.create({
 });
 
 export default ProfilePet;
+
 
 
 

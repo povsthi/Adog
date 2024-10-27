@@ -7,6 +7,7 @@ const PetCard = ({ pet }) => {
   const imageSource = pet.foto ? { uri: `http://192.168.2.107:3001/uploads/${pet.foto}` } : null;
 
   return (
+    <TouchableOpacity onPress={onPress}>
     <View style={styles.card}>
       {imageSource && <Image source={imageSource} style={styles.image} />}
       <View style={styles.info}>
@@ -18,6 +19,7 @@ const PetCard = ({ pet }) => {
         
       </View>
     </View>
+    </TouchableOpacity>
   );
 };
 
