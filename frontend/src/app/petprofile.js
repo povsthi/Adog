@@ -13,21 +13,16 @@ const ProfilePet = () => {
 
   useEffect(() => {
     const fetchPetData = async () => {
-      const petId = await getData(); 
-      if (petId) {
-        try {
-          const response = await fetch(`http://192.168.3.29:3001/pets/${petId}`); 
-          const petData = await response.json();
-          setPet(petData);
-        } catch (error) {
-          console.error('Erro ao buscar os dados do pet:', error);
-          Alert.alert('Erro', 'Não foi possível carregar os dados do pet.');
+        const petData = await getData();  
+        if (petData) {
+            setPet(petData);  
+        } else {
+            Alert.alert('Erro', 'Não foi possível carregar os dados do pet.');
         }
-      }
     };
 
     fetchPetData();
-  }, []);
+}, []);
 
   const renderImage = ({ item }) => (
     <Image source={{ uri: item }} style={styles.petImage} /> 

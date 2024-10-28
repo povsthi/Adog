@@ -33,9 +33,10 @@ const Home = () => {
   }, []);
 
   const handlePetClick = async (pet) => {
-    await storeData(pet.ID_Animal); 
-    router.push('/petprofile'); 
-  };
+    await storeData(pet);  
+    router.push('/petprofile');  
+};
+
 
   return (
     <View style={styles.container}>

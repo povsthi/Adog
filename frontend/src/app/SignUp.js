@@ -6,6 +6,7 @@ import RoundedButton from '../components/RoundedButton';
 import Label from '../components/Label';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { storeUserId } from './storage';
 
 const SignUp = () => {
   const [nome, setNome] = useState('');
@@ -84,42 +85,48 @@ const SignUp = () => {
     }
   };
 
-  const Cadastrar = () => {
+  const Cadastrar = async () => { 
     if (!nome || !email || !senha || !confirmarSenha || !cpf || !moradia) {
       Alert.alert('Erro', 'Todos os campos são obrigatórios!');
       return;
     }
-
+  
     if (senha !== confirmarSenha) {
       Alert.alert('Erro!', 'Senhas diferentes');
       return;
     }
-
+  
     const userObj = { nome, email, senha, cpf, moradia, latitude: location.latitude, longitude: location.longitude };
     const jsonBody = JSON.stringify(userObj);
     console.log(jsonBody);
-
-    fetch('http://192.168.3.29:3001/usuarios', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
-      body: jsonBody,
-    })
-      .then((response) => response.json())
-      .then((json) => {
-        console.log("Resposta do servidor:", json);
-        if (json.affectedRows && json.affectedRows > 0) {
-          router.replace('/dashboard');
-        } else {
-          Alert.alert('Erro', 'Falha no cadastro. Tente novamente.');
-        }
-      })
-      .catch((err) => {
-        console.log(err);
+  
+    try {
+      const response = await fetch('http://192.168.3.29:3001/usuarios', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: jsonBody,
       });
+  
+      const json = await response.json();
+      console.log("Resposta do servidor:", json);
+  
+      if (json.affectedRows && json.affectedRows > 0) {
+        if (json.userId) {
+          await storeUserId(json.id); 
+        }
+        router.replace('/dashboard');
+      } else {
+        Alert.alert('Erro', 'Falha no cadastro. Tente novamente.');
+      }
+    } catch (err) {
+      console.log(err);
+      Alert.alert('Erro', 'Ocorreu um erro no cadastro.');
+    }
   };
+  
 
   return (
     <View style={styles.container}>
