@@ -1,9 +1,15 @@
 import React from 'react';
-import { Image, TouchableOpacity, StyleSheet } from 'react-native';
+import { Image, TouchableOpacity, StyleSheet, View } from 'react-native';
 import { Feather, Ionicons } from '@expo/vector-icons';
 
 const HeaderLogo = () => (
-  <Image source={require('../../assets/LogoAdog.png')} style={styles.logo} />
+  <View style={styles.logoContainer}>
+    <Image
+      source={require('../../assets/LogoAdog.png')} 
+      style={styles.logo}
+      resizeMode="contain" 
+    />
+  </View>
 );
 
 const HeaderRightIcon = ({ name, onPress }) => (
@@ -13,9 +19,14 @@ const HeaderRightIcon = ({ name, onPress }) => (
 );
 
 const styles = StyleSheet.create({
+  logoContainer: {
+    flex: 1, 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+  },
   logo: {
-    width: 60,
-    height: 60
+    height: 40,  
+    width: 150,
   },
   headerRight: {
     marginRight: 15,

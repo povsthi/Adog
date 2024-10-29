@@ -1,23 +1,22 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 
-
-const PetCard = ({ pet }) => {
+const PetCard = ({ pet, onPress }) => {
   const imageSource = pet.foto ? { uri: `http://192.168.2.107:3001/uploads/${pet.foto}` } : null;
 
   return (
-    <View style={styles.card}>
-      {imageSource && <Image source={imageSource} style={styles.image} />}
-      <View style={styles.info}>
-        <Text style={styles.nome}>{pet.nome}</Text>
-        <Text style={styles.raca}>{pet.raca}</Text>
-        <Text style={styles.comportamento}>Comportamento: {pet.comportamento || 'Desconhecido'}</Text>
-        <Text style={styles.idade}>{pet.idade}</Text>
-        <Text style={styles.localizacao}>{pet.cidade}</Text>
-        
+    <TouchableOpacity onPress={onPress}>
+      <View style={styles.card}>
+        {imageSource && <Image source={imageSource} style={styles.image} />}
+        <View style={styles.info}>
+          <Text style={styles.nome}>{pet.nome}</Text>
+          <Text style={styles.raca}>{pet.raca}</Text>
+          <Text style={styles.comportamento}>Comportamento: {pet.comportamento || 'Desconhecido'}</Text>
+          <Text style={styles.idade}>{pet.idade} anos</Text>
+          <Text style={styles.localizacao}>{pet.cidade}</Text>
+        </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 
@@ -49,9 +48,8 @@ const styles = StyleSheet.create({
   localizacao: {
     color: '#000080',
   },
-  distancia: {
-    color: '#000080',
-  },
 });
 
 export default PetCard;
+
+

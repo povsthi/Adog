@@ -19,12 +19,7 @@ export default function Layout() {
         headerStyle: {
           backgroundColor: '#212A75',
         },
-      
-        contentStyle: {
-          paddingTop: 20,
-          backgroundColor: '#212A75'
-        },
-        headerTransparent: false
+    
       }}
     >
       <Stack.Screen 

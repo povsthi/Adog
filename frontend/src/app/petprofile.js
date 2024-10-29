@@ -1,37 +1,82 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, Image, StyleSheet, Dimensions, TouchableOpacity, Alert } from 'react-native';
 import Carousel from 'react-native-reanimated-carousel';
 import { Feather, Ionicons } from '@expo/vector-icons';
-import axios from 'axios'; 
+import { useNavigation } from '@react-navigation/native';
+import { getData } from './storage'; 
 
 const { width } = Dimensions.get('window');
 
-const ProfilePet = ({ route, navigation }) => {
-  const { pet } = route.params; 
+const ProfilePet = () => {
+  const navigation = useNavigation();
+  const [pet, setPet] = useState(null); 
+
+  useEffect(() => {
+    const fetchPetData = async () => {
+        const petData = await getData();  
+        if (petData) {
+            setPet(petData);  
+        } else {
+            Alert.alert('Erro', 'Não foi possível carregar os dados do pet.');
+        }
+    };
+
+    fetchPetData();
+}, []);
 
   const renderImage = ({ item }) => (
-    <Image source={item} style={styles.petImage} />
+    <Image source={{ uri: item }} style={styles.petImage} /> 
   );
 
   const handleFavorite = async () => {
     try {
-      await axios.post('http://seu-endpoint/favoritas', {
-        FK_Pet_ID_Animal: pet.ID_Animal, 
-        FK_Usuario_ID: 'user-id-aqui', 
+      const response = await fetch('http://192.168.3.29:3001/favoritas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          FK_Pet_ID_Animal: pet.ID_Animal,
+          FK_Usuario_ID: 'user-id-aqui', 
+        }),
       });
-      Alert.alert('Favorito', `${pet.nome} adicionado aos favoritos!`);
+
+      if (response.ok) {
+        Alert.alert('Favorito', `${pet.nome} foi adicionado aos favoritos!`);
+      } else {
+        throw new Error('Falha ao favoritar');
+      }
     } catch (error) {
       Alert.alert('Erro', 'Não foi possível adicionar aos favoritos.');
     }
   };
 
   const handleLike = async () => {
-    Alert.alert('Like', `${pet.nome} foi curtido!`);
+    try {
+      const response = await fetch('http://192.168.3.29:3001/likes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          FK_Pet_ID_Animal: pet.ID_Animal,
+          FK_Usuario_ID: 'user-id-aqui', 
+        }),
+      });
+
+      if (response.ok) {
+        Alert.alert('Like', `Você curtiu ${pet.nome}!`);
+      } else {
+        throw new Error('Falha ao curtir');
+      }
+    } catch (error) {
+      Alert.alert('Erro', 'Não foi possível curtir o pet.');
+    }
   };
 
   const handleBack = () => {
-    navigation.goBack(); 
+    navigation.goBack();
   };
+
+  if (!pet) {
+    return <Text>Carregando...</Text>; 
+  }
 
   return (
     <View style={styles.container}>
@@ -41,7 +86,7 @@ const ProfilePet = ({ route, navigation }) => {
           width={width * 0.8}
           height={200}
           autoPlay={true}
-          data={pet.imagens}
+          data={pet.imagens} 
           renderItem={renderImage}
           style={styles.carousel}
         />
@@ -49,12 +94,11 @@ const ProfilePet = ({ route, navigation }) => {
 
       <View style={styles.infoContainer}>
         <Text style={styles.petName}>{`${pet.nome}, ${pet.idade}`}</Text>
-        <Text style={styles.petDetail}>• Pesa {pet.peso}</Text>
         <Text style={styles.petDetail}>• Porte {pet.porte}</Text>
         <Text style={styles.petDetail}>• {pet.raca}</Text>
         <Text style={styles.petDetail}>• {pet.sexo}</Text>
-        <Text style={styles.petDetail}>• Residente de {pet.localizacao}</Text>
-        <Text style={styles.petDetail}>• {pet.temperamento}</Text>
+        <Text style={styles.petDetail}>• Residente de {pet.cidade}</Text>
+        <Text style={styles.petDetail}>• {pet.comportamento}</Text>
       </View>
 
       <View style={styles.navigationContainer}>
@@ -111,6 +155,10 @@ const styles = StyleSheet.create({
 });
 
 export default ProfilePet;
+
+
+
+
 
 
 

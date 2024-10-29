@@ -36,8 +36,6 @@ const SettingsScreen = () => {
       <View style={styles.adContainer}>
         <Text style={styles.adText}>Anúncio</Text>
       </View>
-
-      <BottomNavigation/>
     </View>
   );
 };
