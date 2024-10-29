@@ -37,6 +37,7 @@ const SignIn = () => {
           const json = JSON.parse(text);
           if (json.mensagem === 'Usuário válido') {
             await handleLogin(json.id); 
+            console.log(json.token);
             router.replace('/dashboard');
           } else {
             console.log('Erro: Usuário inválido');

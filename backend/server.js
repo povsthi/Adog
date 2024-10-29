@@ -10,6 +10,22 @@ const port = 3001;
 app.use(express.static("public"));
 app.use(cors());
 app.use(express.json());
+const jwt = require("jsonwebtoken"); 
+const privateKey = "xxxyyyzzz123";
+
+const middlewareValidarJWT = (req, res, next) => {
+    const jwtToken = req.headers["authorization"];
+  
+    jwt.verify(jwtToken, privateKey, (err, userInfo) => {
+        if (err) {
+            res.status(403).end();
+            return;
+        }
+
+        req.userInfo = userInfo;
+        next();
+    });
+};
 
 const db = {
     host: 'adog.linceonline.com.br',
@@ -49,7 +65,7 @@ app.get('/', (req, res) => {
     res.send('Hello World!');
 });
 
-app.get('/usuarios', (req, res) => {
+app.get('/usuarios', middlewareValidarJWT, (req, res) => {
     const id = [];
     execSQLQuery("SELECT * from Usuario", id, res);
 });
@@ -78,7 +94,17 @@ app.post('/login', async (req, res) => {
     let result = await resultSQLQuery('SELECT * FROM Usuario WHERE email=? and senha=?', id);
 
     if (result.length > 0)
-        res.json({ "mensagem": "Usuário válido" });
+        jwt.sign(req.body, privateKey, (err, token) => {
+            if (err) {
+                res
+                    .status(500)
+                    .json({ mensagem: "Erro ao gerar o JWT" });
+
+                return;
+            }
+            res.json({"mensagem": "Usuário válido", "id": result[0].ID, "token": token});
+            res.end();
+        });
     else {
         res.json({ "mensagem": "Usuário Inválido" });
     }
@@ -94,7 +120,6 @@ const storage = multer.diskStorage({
       cb(null, Date.now() + path.extname(file.originalname)); 
     },
   });
-  
   const upload = multer({ storage });
   
   app.post('/pets', upload.single('foto'), (req, res) => {
