@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome'; 
+import Icon from 'react-native-vector-icons/FontAwesome'; // Certifique-se de ter instalado react-native-vector-icons
 
 const veterinarians = [
   {
@@ -9,7 +9,7 @@ const veterinarians = [
     specialty: 'Clínica Veterinária',
     location: 'Cataguases-MG',
     distance: '23 km',
-    image: '', 
+    image: 'https://via.placeholder.com/60', // URL de uma imagem padrão
   },
   {
     id: '2',
@@ -17,7 +17,7 @@ const veterinarians = [
     specialty: 'Veterinária',
     location: 'Leopoldina-MG',
     distance: '5 km',
-    image: '',
+    image: 'https://via.placeholder.com/60', // URL de uma imagem padrão
   },
   {
     id: '3',
@@ -25,7 +25,7 @@ const veterinarians = [
     specialty: 'Clínica Veterinária',
     location: 'Vista Alegre-MG',
     distance: '16.3 km',
-    image: '', 
+    image: 'https://via.placeholder.com/60', // URL de uma imagem padrão
   },
   {
     id: '4',
@@ -33,7 +33,7 @@ const veterinarians = [
     specialty: 'Veterinário',
     location: 'Leopoldina-MG',
     distance: '16.3 km',
-    image: '', 
+    image: 'https://via.placeholder.com/60', // URL de uma imagem padrão
   },
 ];
 
@@ -46,12 +46,19 @@ const VeterinariansScreen = () => {
 
   const renderItem = ({ item }) => (
     <View style={styles.card}>
-      <Image source={{ uri: item.image }} style={styles.image} />
+      <Image 
+        source={{ uri: item.image }} 
+        style={styles.image} 
+        onError={() => {
+          // Adiciona um placeholder caso a imagem falhe ao carregar
+          item.image = 'https://via.placeholder.com/60';
+        }} 
+      />
       <View style={styles.infoContainer}>
         <Text style={styles.name}>{item.name}</Text>
         <Text style={styles.specialty}>{item.specialty}</Text>
         <Text style={styles.location}>{item.location}</Text>
-        <Text style={styles.distance}>Está a {item.distance}</Text>
+        <Text style={styles.distance}>Distância: {item.distance}</Text>
       </View>
     </View>
   );
@@ -62,15 +69,14 @@ const VeterinariansScreen = () => {
         <TouchableOpacity style={styles.notificationIcon}>
           <Icon name="bell" size={24} color="#fff" />
         </TouchableOpacity>
-        
-        {}
+
         <Image 
-          source={require('../../assets/LogoAdog.png')} 
+          source={require('./assets/LogoAdog-removebg-preview.png')} // Substitua pelo caminho da sua logo
           style={styles.logo} 
           resizeMode="contain"
         />
         
-        <View style={styles.emptyIcon} /> {}
+        <View style={styles.emptyIcon} /> {/* Espaço vazio para manter o layout */}
       </View>
 
       <FlatList
@@ -110,8 +116,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logo: {
-    width: 100, 
-    height: 40, 
+    width: 100,
+    height: 40,
     position: 'absolute', 
     left: '50%',
     transform: [{ translateX: -50 }], 
@@ -164,6 +170,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-})
+});
 
 export default VeterinariansScreen;
