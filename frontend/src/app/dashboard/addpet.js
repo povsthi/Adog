@@ -4,6 +4,19 @@ import CustomTextInput from '../../components/CustomTextInput';
 import RNPickerSelect from 'react-native-picker-select';
 import { launchImageLibrary } from 'react-native-image-picker';
 
+const formatData = (text) => {
+  let data = text.replace(/\D/g, '');
+
+  if (data.length > 8) {
+    data = data.slice(0, 8);
+  }
+
+  data = data.replace(/(\d{2})(\d)/, '$1/$2');
+  data = data.replace(/(\d{2})(\d)/, '$1/$2');
+
+  return data;
+};
+
 const AddPet = () => {
   const [nomePet, setNomePet] = useState('');
   const [tipoPet, setTipoPet] = useState('');
@@ -56,7 +69,7 @@ const AddPet = () => {
     }
 
     try {
-      const response = await fetch('http://192.168.2.107:3001/pets', {
+      const response = await fetch('http://localhost:3001/pets', {
         method: 'POST',
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -114,7 +127,7 @@ const AddPet = () => {
         value={raca}
       />
       <CustomTextInput placeholder="Porte" value={porte} onChangeText={setPorte} />
-      <CustomTextInput placeholder="Data de Nascimento" value={dataNascimento} onChangeText={setDataNascimento} />
+      <CustomTextInput placeholder="DD/MM/AAAA" value={dataNascimento} onChangeText={text => setDataNascimento(formatData(text))} />
 
       <TouchableOpacity onPress={selecionarFoto}>
         <Text style={styles.button}>Selecionar Foto</Text>

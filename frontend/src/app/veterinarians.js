@@ -71,7 +71,7 @@ const VeterinariansScreen = () => {
         </TouchableOpacity>
 
         <Image 
-          source={require('./assets/LogoAdog-removebg-preview.png')} // Substitua pelo caminho da sua logo
+          source={require('../../assets/LogoAdog.png')} // Substitua pelo caminho da sua logo
           style={styles.logo} 
           resizeMode="contain"
         />

@@ -24,7 +24,7 @@ const RegisterAd = () => {
       return;
     }
 
-    fetch('http://seu-servidor.com/anuncios', {
+    fetch('http://192.168.3.29/anuncios', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -68,7 +68,7 @@ const RegisterAd = () => {
           <Text style={styles.backButton}>{"<"}</Text>
         </TouchableOpacity>
         <Image 
-          source={require('./assents/LogoAdog.png')} 
+          source={require('../../assets/LogoAdog.png')} 
           style={styles.logo} 
           resizeMode="contain"
         />
@@ -206,4 +206,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default registerad;
+export default RegisterAd;

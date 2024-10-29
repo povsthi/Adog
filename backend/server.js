@@ -37,18 +37,19 @@ const db = {
 
 const execSQLQuery = (sqlQry, id, res) => {
     const connection = mysql.createConnection(db);
-    connection.connect(); 
+    connection.connect();
 
     connection.query(sqlQry, id, (error, results) => {
         if (error) {
-            res.status(500).json({ error: 'Erro ao executar a consulta SQL' });
+            return res.status(500).json({ error: 'Erro ao executar a consulta SQL' });
         } else {
             res.json(results);
         }
-        connection.end(); 
+        connection.end();
         console.log('Executou: execSQLQuery');
     });
 };
+
 
 async function resultSQLQuery(sqlQry, id) {
     const connection = await mysql.createConnection(db);
@@ -65,10 +66,17 @@ app.get('/', (req, res) => {
     res.send('Hello World!');
 });
 
-app.get('/usuarios', middlewareValidarJWT, (req, res) => {
+app.get('/usuarios', (req, res) => {
     const id = [];
     execSQLQuery("SELECT * from Usuario", id, res);
 });
+
+app.get('/usuarios/:id', (req, res) => { 
+    const id = req.params.id; 
+    execSQLQuery(`SELECT * FROM Usuario WHERE id = ?`, [id], res); 
+});
+
+
 
 app.get('/pets', (req, res) => {
     const id = [];
@@ -200,21 +208,29 @@ app.delete('/anuncios/:id', (req, res) => {
     execSQLQuery(query, idParams, res);
 });
 
-app.post('/likes', (req, res) => {
+app.post('/likes', async (req, res) => {
     console.log('Recebendo requisição POST em /likes');
     const { idUsuario, idPet } = req.body;
     console.log('Dados recebidos:', req.body);
-
+  
+    if (!idUsuario || !idPet) {
+      return res.status(400).json({ error: 'idUsuario e idPet são necessários.' });
+    }
+  
     const query = `
         INSERT INTO Adota_Like (FK_Usuario_ID, FK_Pet_ID_Animal)
         VALUES (?, ?)
     `;
     const idParams = [idUsuario, idPet];
     
-    execSQLQuery(query, idParams, (result) => {
-        checkForMatch(idUsuario, idPet, res);
-    });
-});
+    try {
+        await resultSQLQuery(query, idParams);
+        res.status(200).json({ message: 'Like registrado com sucesso.' });
+    } catch (error) {
+        console.error("Erro ao registrar o like:", error);
+        res.status(500).json({ error: 'Erro ao registrar o like' });
+    }
+  });
 
 const checkForMatch = (idUsuario, idPet, res) => {
     console.log(`Verificando se há match entre o usuário ${idUsuario} e o pet ${idPet}`);

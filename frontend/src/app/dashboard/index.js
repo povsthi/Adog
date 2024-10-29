@@ -10,7 +10,7 @@ const Home = () => {
 
   const fetchPets = async () => {
     try {
-      const response = await fetch('http://192.168.3.29:3001/pets'); 
+      const response = await fetch('http://localhost:3001/pets'); 
       const data = await response.json();
       
       const mappedData = data.map((pet) => ({

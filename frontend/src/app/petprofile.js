@@ -3,80 +3,90 @@ import { View, Text, Image, StyleSheet, Dimensions, TouchableOpacity, Alert } fr
 import Carousel from 'react-native-reanimated-carousel';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { getData } from './storage'; 
+import { getData, getUserId } from './storage';
 
 const { width } = Dimensions.get('window');
 
 const ProfilePet = () => {
   const navigation = useNavigation();
-  const [pet, setPet] = useState(null); 
+  const [pet, setPet] = useState(null);
 
   useEffect(() => {
     const fetchPetData = async () => {
-        const petData = await getData();  
-        if (petData) {
-            setPet(petData);  
-        } else {
-            Alert.alert('Erro', 'Não foi possível carregar os dados do pet.');
-        }
+      try {
+        const petData = await getData();
+        if (petData) setPet(petData);
+        else Alert.alert('Erro', 'Não foi possível carregar os dados do pet.');
+      } catch (error) {
+        console.error('Erro ao carregar dados do pet:', error);
+      }
     };
-
     fetchPetData();
-}, []);
-
-  const renderImage = ({ item }) => (
-    <Image source={{ uri: item }} style={styles.petImage} /> 
-  );
+  }, []);
 
   const handleFavorite = async () => {
+    console.log('Botão de Favoritar pressionado');
     try {
-      const response = await fetch('http://192.168.3.29:3001/favoritas', {
+      const userId = await getUserId();
+      if (!userId || !pet?.ID_Animal) {
+        Alert.alert('Erro', 'Dados insuficientes para favoritar o pet.');
+        return;
+      }
+
+      const response = await fetch('http://localhost:3001/favoritas', { 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          FK_Pet_ID_Animal: pet.ID_Animal,
-          FK_Usuario_ID: 'user-id-aqui', 
-        }),
+        body: JSON.stringify({ FK_Pet_ID_Animal: pet.ID_Animal, FK_Usuario_ID: userId }),
       });
+
+      const result = await response.json();
+      console.log('Resposta do servidor para favorito:', result);
 
       if (response.ok) {
         Alert.alert('Favorito', `${pet.nome} foi adicionado aos favoritos!`);
       } else {
-        throw new Error('Falha ao favoritar');
+        Alert.alert('Erro', 'Falha ao favoritar');
       }
     } catch (error) {
+      console.error('Erro no handleFavorite:', error);
       Alert.alert('Erro', 'Não foi possível adicionar aos favoritos.');
     }
   };
 
   const handleLike = async () => {
     try {
-      const response = await fetch('http://192.168.3.29:3001/likes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          FK_Pet_ID_Animal: pet.ID_Animal,
-          FK_Usuario_ID: 'user-id-aqui', 
-        }),
-      });
-
-      if (response.ok) {
-        Alert.alert('Like', `Você curtiu ${pet.nome}!`);
-      } else {
-        throw new Error('Falha ao curtir');
-      }
+        const userId = await getUserId(); 
+        if (!userId || !pet.ID_Animal) {
+            Alert.alert('Erro', 'Dados insuficientes para curtir o pet.');
+            return;
+        }
+  
+        const response = await fetch('http://localhost:3001/likes', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                idUsuario: userId,
+                idPet: pet.ID_Animal, 
+            }),
+        });
+  
+        if (response.ok) {
+            Alert.alert('Like', `Você curtiu ${pet.nome}!`);
+        } else {
+            throw new Error('Falha ao curtir');
+        }
     } catch (error) {
-      Alert.alert('Erro', 'Não foi possível curtir o pet.');
+        Alert.alert('Erro', 'Não foi possível curtir o pet.');
+        console.error(error);  
     }
   };
+  
 
   const handleBack = () => {
     navigation.goBack();
   };
 
-  if (!pet) {
-    return <Text>Carregando...</Text>; 
-  }
+  if (!pet) return <Text>Carregando...</Text>;
 
   return (
     <View style={styles.container}>
@@ -86,8 +96,10 @@ const ProfilePet = () => {
           width={width * 0.8}
           height={200}
           autoPlay={true}
-          data={pet.imagens} 
-          renderItem={renderImage}
+          data={pet.imagens}
+          renderItem={({ item }) => (
+            <Image source={{ uri: item }} style={styles.petImage} />
+          )}
           style={styles.carousel}
         />
       </View>
@@ -155,6 +167,10 @@ const styles = StyleSheet.create({
 });
 
 export default ProfilePet;
+
+
+
+
 
 
 

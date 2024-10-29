@@ -12,8 +12,8 @@ const SignIn = () => {
 
   const handleLogin = async (userId) => {
     try {
-      await storeUserId(id); 
-      console.log('ID do usuário salvo:', id);
+      await storeUserId(userId); 
+      console.log('ID do usuário salvo:', userId);
     } catch (error) {
       console.error('Erro ao salvar o ID do usuário:', error);
     }
@@ -23,7 +23,7 @@ const SignIn = () => {
     const userObj = { email, senha };
     const jsonBody = JSON.stringify(userObj);
 
-    fetch('http://192.168.3.29:3001/login', {
+    fetch('http://localhost:3001/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
