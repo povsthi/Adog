@@ -1,22 +1,22 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export const storeData = async (pet) => {
+export const storeData = async (petId) => {
     try {
-        const petData = JSON.stringify(pet);  
-        await AsyncStorage.setItem('selected-pet', petData);  
+      await AsyncStorage.setItem('selected-pet-id', petId.toString());  
     } catch (e) {
-        console.log(e);
+      console.log(e);
     }
-};
-
-export const getData = async () => {
+  };
+  
+  export const getData = async () => {
     try {
-        const petData = await AsyncStorage.getItem('selected-pet');
-        return petData != null ? JSON.parse(petData) : null;  
+      const petId = await AsyncStorage.getItem('selected-pet-id');
+      return petId ? parseInt(petId, 10) : null;  
     } catch (e) {
-        console.log(e);
+      console.log(e);
     }
-};
+  };
+  
 
 export const storeUserId = async (userId) => {
   try {

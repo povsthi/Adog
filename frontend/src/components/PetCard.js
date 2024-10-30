@@ -9,11 +9,11 @@ const PetCard = ({ pet, onPress }) => {
       <View style={styles.card}>
         {imageSource && <Image source={imageSource} style={styles.image} />}
         <View style={styles.info}>
-          <Text style={styles.nome}>{pet.nome}</Text>
-          <Text style={styles.raca}>{pet.raca}</Text>
-          <Text style={styles.comportamento}>Comportamento: {pet.comportamento || 'Desconhecido'}</Text>
-          <Text style={styles.idade}>{pet.idade} anos</Text>
-          <Text style={styles.localizacao}>{pet.cidade}</Text>
+          <Text style={styles.nome}>{pet.Nome}</Text>
+          <Text style={styles.raca}>{pet.Raca}</Text>
+          <Text style={styles.comportamento}>Comportamento: {pet.Comportamento || 'Desconhecido'}</Text>
+          <Text style={styles.idade}>{pet.Idade} anos</Text>
+          <Text style={styles.localizacao}>{pet.Cidade}</Text>
         </View>
       </View>
     </TouchableOpacity>

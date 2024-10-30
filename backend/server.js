@@ -41,7 +41,8 @@ const execSQLQuery = (sqlQry, id, res) => {
 
     connection.query(sqlQry, id, (error, results) => {
         if (error) {
-            return res.status(500).json({ error: 'Erro ao executar a consulta SQL' });
+            console.error("Detalhes do erro SQL:", error); 
+            return res.status(500).json({ error: 'Erro ao executar a consulta SQL', detalhes: error.message });
         } else {
             res.json(results);
         }
@@ -49,7 +50,6 @@ const execSQLQuery = (sqlQry, id, res) => {
         console.log('Executou: execSQLQuery');
     });
 };
-
 
 async function resultSQLQuery(sqlQry, id) {
     const connection = await mysql.createConnection(db);
@@ -73,15 +73,20 @@ app.get('/usuarios', (req, res) => {
 
 app.get('/usuarios/:id', (req, res) => { 
     const id = req.params.id; 
-    execSQLQuery(`SELECT * FROM Usuario WHERE id = ?`, [id], res); 
+    execSQLQuery(`SELECT * FROM Usuario WHERE ID = ?`, [id], res); 
 });
-
 
 
 app.get('/pets', (req, res) => {
     const id = [];
     execSQLQuery("SELECT * from Pet", id, res);
 });
+
+app.get('/pets/:id', (req, res) => { 
+    const id = req.params.id; 
+    execSQLQuery(`SELECT * FROM Pet WHERE ID_Animal = ?`, [id], res); 
+});
+  
 
 app.post('/usuarios', (req, res) => {
     console.log('Recebendo requisição POST em /usuarios');

@@ -10,19 +10,14 @@ const Home = () => {
 
   const fetchPets = async () => {
     try {
-      const response = await fetch('http://localhost:3001/pets'); 
+      const response = await fetch('http://localhost:3001/pets', {
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
       const data = await response.json();
-      
-      const mappedData = data.map((pet) => ({
-        nome: pet.Nome,
-        raca: pet.Raca,
-        comportamento: pet.Comportamento,
-        idade: pet.Idade,
-        cidade: pet.Cidade,
-        foto: pet.Foto, 
-      }));
-      
-      setPets(mappedData);
+      console.log("Resposta da API:", data); 
+      setPets(data);
     } catch (error) {
       console.error('Erro ao buscar pets:', error);
     }
@@ -33,10 +28,14 @@ const Home = () => {
   }, []);
 
   const handlePetClick = async (pet) => {
-    await storeData(pet);  
-    router.push('/petprofile');  
-};
-
+    if (pet?.ID_Animal) {  
+      await storeData(pet.ID_Animal);  
+      router.push('/petprofile');
+    } else {
+      console.error('Pet ID não encontrado: ', pet);  
+    }
+  };
+  
 
   return (
     <View style={styles.container}>

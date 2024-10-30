@@ -12,30 +12,37 @@ export default function Layout() {
     router.push('/notifications'); 
   };
 
+  const handleLogoPress = () => {
+    router.push('/dashboard'); 
+  };
+
   return (
     <Stack
       screenOptions={{
-        headerTitle: props => <HeaderLogo {...props} />,
+        headerTitle: () => (
+          <TouchableOpacity onPress={handleLogoPress}>
+            <HeaderLogo />
+          </TouchableOpacity>
+        ),
         headerStyle: {
           backgroundColor: '#212A75',
         },
-    
       }}
     >
       <Stack.Screen 
         name="index" 
-        options={{ headerShown: false, 
+        options={{ 
+          headerShown: false, 
           headerRight: () => ( 
-              <TouchableOpacity onPress={handleNotificationPress} style={{ marginRight: 10 }}>
-                <Ionicons name="notifications-outline" size={24} color="#FFF" />
-              </TouchableOpacity>
+            <TouchableOpacity onPress={handleNotificationPress} style={{ marginRight: 10 }}>
+              <Ionicons name="notifications-outline" size={24} color="#FFF" />
+            </TouchableOpacity>
           ),
         }} 
       />
       <Stack.Screen 
         name="signup" 
-        options ={{
-          
+        options={{
           headerTitleStyle: {
             marginTop: 100,
             padding: 100
@@ -47,7 +54,6 @@ export default function Layout() {
       />
       <Stack.Screen 
         name="dashboard" 
-        options={{ headerShown: false }} 
       />
       <Stack.Screen 
         name="petprofile" 
@@ -64,6 +70,7 @@ export default function Layout() {
     </Stack>
   );
 } 
+
 
 
 
