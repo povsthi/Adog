@@ -101,7 +101,7 @@ const SignUp = () => {
     console.log(jsonBody);
   
     try {
-      const response = await fetch('http://192.168.3.29:3001/usuarios', {
+      const response = await fetch('http://localhost:3001/usuarios', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

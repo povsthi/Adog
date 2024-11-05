@@ -11,6 +11,8 @@ const ProfilePet = () => {
   const navigation = useNavigation();
   const [pet, setPet] = useState(null);
   const [idUsuario, setIdUsuario] = useState(null);
+  const [isLiked, setIsLiked] = useState(false); // Estado para controlar o like
+  const [isFavorited, setIsFavorited] = useState(false); // Estado para controlar o favorito
 
   useEffect(() => {
     const fetchUserId = async () => {
@@ -31,7 +33,7 @@ const ProfilePet = () => {
             throw new Error('Erro na resposta da API');
           }
           const petData = await response.json();
-          setPet(petData[0]);  // Acessando o primeiro elemento, caso a resposta seja uma lista
+          setPet(petData[0]);  
           console.log('Dados do Pet:', petData);
         } else {
           Alert.alert('Erro', 'Não foi possível carregar os dados do pet.');
@@ -47,7 +49,7 @@ const ProfilePet = () => {
   const handleFavorite = async () => {
     console.log('Botão de Favoritar pressionado');
     try {
-      if (!idUsuario || !pet?.ID_Animal) {  // Mudando para ID_Animal
+      if (!idUsuario || !pet?.ID_Animal) {  
         Alert.alert('Erro', 'Dados insuficientes para favoritar o pet.');
         return;
       }
@@ -55,11 +57,15 @@ const ProfilePet = () => {
       const response = await fetch('http://localhost:3001/favoritas', { 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ FK_Pet_ID_Animal: pet.ID_Animal, FK_Usuario_ID: idUsuario }),
+        body: JSON.stringify({ 
+          idUsuario: idUsuario,  
+          idPet: pet.ID_Animal,
+        }),
       });
       const result = await response.json();
       console.log('Resposta do servidor para favorito:', result);
       if (response.ok) {
+        setIsFavorited(true); // Marca como favoritado
         Alert.alert('Favorito', `${pet.Nome} foi adicionado aos favoritos!`);
       } else {
         Alert.alert('Erro', 'Falha ao favoritar');
@@ -72,7 +78,7 @@ const ProfilePet = () => {
 
   const handleLike = async () => {
     try {
-      if (!idUsuario || !pet?.ID_Animal) {  // Mudando para ID_Animal
+      if (!idUsuario || !pet?.ID_Animal) {  
         Alert.alert('Erro', 'Dados insuficientes para curtir o pet.');
         return;
       }
@@ -81,14 +87,21 @@ const ProfilePet = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          FK_Pet_ID_Animal: pet.ID_Animal, FK_Usuario_ID: idUsuario
-         }),
+          idUsuario: idUsuario,  
+          idPet: pet.ID_Animal,
+        }),
       });
+      console.log('Tentando enviar o like...');
       if (response.ok) {
-        Alert.alert('Like', `Você curtiu ${pet.Nome}!`);
+        const responseData = await response.json();
+        console.log('Like registrado:', responseData);
+        setIsLiked(true); // Marca como curtido
+        Alert.alert('Like', responseData.message);
       } else {
+        const errorData = await response.json(); // Para pegar a resposta de erro do servidor
+        console.error('Erro ao curtir o pet:', errorData);
         throw new Error('Falha ao curtir');
-      }
+      }      
     } catch (error) {
       Alert.alert('Erro', 'Não foi possível curtir o pet.');
       console.error(error);
@@ -109,7 +122,7 @@ const ProfilePet = () => {
           width={width * 0.8}
           height={200}
           autoPlay={true}
-          data={pet.imagens} // Certifique-se de que 'imagens' está correto
+          data={pet.imagens} 
           renderItem={({ item }) => (
             <Image source={{ uri: item }} style={styles.petImage} />
           )}
@@ -126,13 +139,13 @@ const ProfilePet = () => {
       </View>
       <View style={styles.navigationContainer}>
         <TouchableOpacity onPress={handleLike}>
-          <Ionicons name="heart-outline" size={32} color="#000" />
+          <Ionicons name={isLiked ? "heart" : "heart-outline"} size={32} color="#212A75" />
         </TouchableOpacity>
         <TouchableOpacity onPress={handleFavorite}>
-          <Ionicons name="star-outline" size={32} color="#000" />
+          <Ionicons name={isFavorited ? "star" : "star-outline"} size={32} color="#212A75" />
         </TouchableOpacity>
         <TouchableOpacity onPress={handleBack}>
-          <Feather name="x" size={32} color="#000" />
+          <Feather name="x" size={32} color="#212A75" />
         </TouchableOpacity>
       </View>
     </View>
@@ -178,6 +191,7 @@ const styles = StyleSheet.create({
 });
 
 export default ProfilePet;
+
 
 
 

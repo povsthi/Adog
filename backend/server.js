@@ -126,46 +126,64 @@ app.post('/login', async (req, res) => {
 });
 
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-      cb(null, 'uploads/'); 
-    },
-    filename: (req, file, cb) => {
-      cb(null, Date.now() + path.extname(file.originalname)); 
-    },
-  });
-  const upload = multer({ storage });
+  destination: (req, file, cb) => {
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname));
+  },
+});
+const upload = multer({ storage });
+
+
+app.post('/pets', upload.single('foto'), (req, res) => {
+  console.log('Recebendo requisição POST em /pets');
   
-  app.post('/pets', upload.single('foto'), (req, res) => {
-    console.log('Recebendo requisição POST em /pets');
-    const {
-      tipo, raca, nome, sexo, idade, porte, comportamento, cidade, rua, fk_usuario_id, fk_raca_id
-    } = req.body;
-  
-    const foto = req.file ? req.file.filename : null; 
-  
-    const petData = [tipo, raca, nome, sexo, idade, porte, comportamento, cidade, rua, fk_usuario_id, fk_raca_id];
-  
-    const petQuery = `
-      INSERT INTO Pet (Tipo, Raca, Nome, Sexo, Idade, Porte, Comportamento, Cidade, Rua, FK_Usuario_ID, FK_Raca_ID)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `;
-  
-    execSQLQuery(petQuery, petData, (result) => {
-      const petId = result.insertId;
-  
-      if (foto) {
-        const fotoQuery = `
-          INSERT INTO Foto (URL, FK_Pet_ID_Animal)
-          VALUES (?, ?)
-        `;
-        execSQLQuery(fotoQuery, [foto, petId], (fotoResult) => {
+  const { tipo, raca, nome, sexo, idade, porte, comportamento, cidade, rua, fk_usuario_id, fk_raca_id } = req.body;
+  const foto = req.file ? req.file.filename : null; 
+
+  const petData = [tipo, raca, nome, sexo, idade, porte, comportamento, cidade, rua, fk_usuario_id, fk_raca_id];
+
+  const petQuery = `
+    INSERT INTO Pet (Tipo, Raca, Nome, Sexo, Idade, Porte, Comportamento, Cidade, Rua, FK_Usuario_ID, FK_Raca_ID)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `;
+
+  const connection = mysql.createConnection(db);
+  connection.connect();
+
+  connection.query(petQuery, petData, (error, result) => {
+    if (error) {
+      console.error("Erro ao cadastrar o pet:", error);
+      res.status(500).json({ error: 'Erro ao cadastrar o pet' });
+      connection.end();
+      return;
+    }
+
+    const petId = result.insertId;
+    console.log('ID do pet cadastrado:', petId);
+
+    if (foto) {
+      const fotoQuery = `
+        INSERT INTO Foto (URL, FK_Pet_ID_Animal)
+        VALUES (?, ?)
+      `;
+      connection.query(fotoQuery, [foto, petId], (fotoError) => {
+        connection.end();
+        if (fotoError) {
+          console.error("Erro ao salvar a foto:", fotoError);
+          res.status(500).json({ error: 'Erro ao salvar a foto do pet' });
+        } else {
           res.status(200).send('Pet cadastrado com sucesso, com foto.');
-        });
-      } else {
-        res.status(200).send('Pet cadastrado com sucesso, sem foto.');
-      }
-    });
+        }
+      });
+    } else {
+      connection.end();
+      res.status(200).send('Pet cadastrado com sucesso, sem foto.');
+    }
   });
+});
+
 
 app.post('/anuncios', (req, res) => {
     console.log('Recebendo requisição POST em /anuncios');
@@ -219,6 +237,7 @@ app.post('/likes', async (req, res) => {
     console.log('Dados recebidos:', req.body);
   
     if (!idUsuario || !idPet) {
+      console.log('Erro: idUsuario e idPet são necessários.');
       return res.status(400).json({ error: 'idUsuario e idPet são necessários.' });
     }
   
@@ -229,13 +248,15 @@ app.post('/likes', async (req, res) => {
     const idParams = [idUsuario, idPet];
     
     try {
+        console.log('Executando a query:', query, 'com parâmetros:', idParams);
         await resultSQLQuery(query, idParams);
+        console.log('Like registrado com sucesso.');
         res.status(200).json({ message: 'Like registrado com sucesso.' });
     } catch (error) {
         console.error("Erro ao registrar o like:", error);
         res.status(500).json({ error: 'Erro ao registrar o like' });
     }
-  });
+});
 
 const checkForMatch = (idUsuario, idPet, res) => {
     console.log(`Verificando se há match entre o usuário ${idUsuario} e o pet ${idPet}`);
