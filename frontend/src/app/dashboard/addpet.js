@@ -4,23 +4,13 @@ import CustomTextInput from '../../components/CustomTextInput';
 import RNPickerSelect from 'react-native-picker-select';
 import { launchImageLibrary } from 'react-native-image-picker';
 
-const formatData = (text) => {
-  let data = text.replace(/\D/g, '');
-  if (data.length > 8) {
-    data = data.slice(0, 8);
-  }
-  data = data.replace(/(\d{2})(\d)/, '$1/$2');
-  data = data.replace(/(\d{2})(\d)/, '$1/$2');
-  return data;
-};
-
 const AddPet = () => {
   const [nomePet, setNomePet] = useState('');
   const [tipoPet, setTipoPet] = useState('');
   const [raca, setRaca] = useState('');
   const [sexo, setSexo] = useState('');
   const [porte, setPorte] = useState('');
-  const [dataNascimento, setDataNascimento] = useState('');
+  const [idade, setIdade] = useState('');
   const [breeds, setBreeds] = useState([]);
   const [outroTipo, setOutroTipo] = useState('');
   const [foto, setFoto] = useState(null);
@@ -54,7 +44,7 @@ const AddPet = () => {
   };
 
   const validarFormulario = () => {
-    if (!nomePet || !tipoPet || !raca || !sexo || !porte || !dataNascimento) {
+    if (!nomePet || !tipoPet || !raca || !sexo || !porte || !idade) {
       Alert.alert('Erro', 'Por favor, preencha todos os campos obrigatórios.');
       return false;
     }
@@ -64,13 +54,14 @@ const AddPet = () => {
   const RegistraPet = async () => {
     if (!validarFormulario()) return;
 
+    console.log('Iniciando o registro do pet...');
     const petData = new FormData();
-    petData.append('nomePet', nomePet);
-    petData.append('tipoPet', tipoPet === 'Outro' ? outroTipo : tipoPet);
+    petData.append('nome', nomePet);
+    petData.append('tipo', tipoPet === 'Outro' ? outroTipo : tipoPet);
     petData.append('raca', raca);
     petData.append('sexo', sexo);
     petData.append('porte', porte);
-    petData.append('dataNascimento', dataNascimento);
+    petData.append('idade', idade);
 
     if (foto) {
       petData.append('foto', {
@@ -82,22 +73,22 @@ const AddPet = () => {
 
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:3001/pets', {
+      const response = await fetch('http://localhost:3001/pets', { 
         method: 'POST',
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-        body: petData,
+        body: petData
       });
+
+      console.log('Resposta do servidor:', response);
 
       if (response.ok) {
         Alert.alert('Sucesso', 'Pet cadastrado com sucesso!');
+        console.log('Cadastro realizado com sucesso.');
         setNomePet('');
         setTipoPet('');
         setRaca('');
         setSexo('');
         setPorte('');
-        setDataNascimento('');
+        setIdade('');
         setOutroTipo('');
         setFoto(null);
       } else {
@@ -124,7 +115,7 @@ const AddPet = () => {
       </TouchableOpacity>
 
       <CustomTextInput placeholder="Nome" value={nomePet} onChangeText={setNomePet} />
-      <CustomTextInput placeholder="Idade" value={dataNascimento} onChangeText={text => setDataNascimento(formatData(text))} />
+      <CustomTextInput placeholder="Idade" value={idade} onChangeText={setIdade} />
 
       <RNPickerSelect
         onValueChange={(value) => setTipoPet(value)}

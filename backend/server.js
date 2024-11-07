@@ -4,6 +4,7 @@ const mysql = require('mysql2');
 const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
+const uploadDir = './uploads';
 
 const port = 3001;
 
@@ -102,6 +103,13 @@ app.post('/usuarios', (req, res) => {
     execSQLQuery(query, id, res);
 });
 
+app.delete('/usuarios/:id', (req, res) => {
+    const id = req.params.id; 
+    const query = `DELETE FROM Usuario WHERE ID = ?`;
+
+    execSQLQuery(query, [id], res);
+});
+
 app.post('/login', async (req, res) => {
     const id = [req.body.email, req.body.senha];
     let result = await resultSQLQuery('SELECT * FROM Usuario WHERE email=? and senha=?', id);
@@ -184,6 +192,13 @@ app.post('/pets', upload.single('foto'), (req, res) => {
   });
 });
 
+app.delete('/pets/:id', (req, res) => {
+    const idPet = req.params.id; 
+    const query = `DELETE FROM Pet WHERE ID_Animal = ?`;
+
+    execSQLQuery(query, [id], res);
+});
+
 
 app.post('/anuncios', (req, res) => {
     console.log('Recebendo requisição POST em /anuncios');
@@ -256,6 +271,20 @@ app.post('/likes', async (req, res) => {
         console.error("Erro ao registrar o like:", error);
         res.status(500).json({ error: 'Erro ao registrar o like' });
     }
+});
+
+app.delete('/likes/:id', (req, res) => {
+    const { id } = req.params;
+
+    console.log('Recebendo requisição DELETE em /likes');
+    console.log('ID do like a ser removido:', id);
+
+    const query = `
+        DELETE FROM Likes
+        WHERE IDLike = ?
+    `;
+    const params = [id];
+    execSQLQuery(query, params, res);
 });
 
 const checkForMatch = (idUsuario, idPet, res) => {

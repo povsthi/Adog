@@ -11,8 +11,8 @@ const ProfilePet = () => {
   const navigation = useNavigation();
   const [pet, setPet] = useState(null);
   const [idUsuario, setIdUsuario] = useState(null);
-  const [isLiked, setIsLiked] = useState(false); // Estado para controlar o like
-  const [isFavorited, setIsFavorited] = useState(false); // Estado para controlar o favorito
+  const [isLiked, setIsLiked] = useState(false); 
+  const [isFavorited, setIsFavorited] = useState(false); 
 
   useEffect(() => {
     const fetchUserId = async () => {
@@ -95,10 +95,10 @@ const ProfilePet = () => {
       if (response.ok) {
         const responseData = await response.json();
         console.log('Like registrado:', responseData);
-        setIsLiked(true); // Marca como curtido
+        setIsLiked(true); 
         Alert.alert('Like', responseData.message);
       } else {
-        const errorData = await response.json(); // Para pegar a resposta de erro do servidor
+        const errorData = await response.json(); 
         console.error('Erro ao curtir o pet:', errorData);
         throw new Error('Falha ao curtir');
       }      
