@@ -65,7 +65,7 @@ const ProfilePet = () => {
       const result = await response.json();
       console.log('Resposta do servidor para favorito:', result);
       if (response.ok) {
-        setIsFavorited(true); // Marca como favoritado
+        setIsFavorited(true); 
         Alert.alert('Favorito', `${pet.Nome} foi adicionado aos favoritos!`);
       } else {
         Alert.alert('Erro', 'Falha ao favoritar');

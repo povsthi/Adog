@@ -10,7 +10,7 @@ export default function Layout() {
           headerShown: false,
           title: "Início",
           tabBarIcon: ({ focused, color, size }) => {
-            const iconName = focused ? 'paw' : 'paw-outline';
+            const iconName = focused ? 'home' : 'home-outline';
             return <Ionicons name={iconName} size={size} color={color} />;
           },
         }}
@@ -44,6 +44,17 @@ export default function Layout() {
           title: "Favoritos",
           tabBarIcon: ({ focused, color, size }) => {
             const iconName = focused ? 'star' : 'star-outline';
+            return <Ionicons name={iconName} size={size} color={color} />;
+          },
+        }}
+      />
+      <Tabs.Screen
+        name="mypets" 
+        options={{
+          headerShown: false,
+          title: "Meus Pets",
+          tabBarIcon: ({ focused, color, size }) => {
+            const iconName = focused ? 'paw' : 'paw-outline';
             return <Ionicons name={iconName} size={size} color={color} />;
           },
         }}

@@ -3,6 +3,7 @@ import { ScrollView, View, TouchableOpacity, Text, StyleSheet, Image, Alert, Act
 import CustomTextInput from '../../components/CustomTextInput';
 import RNPickerSelect from 'react-native-picker-select';
 import { launchImageLibrary } from 'react-native-image-picker';
+import { getUserId } from '../storage'
 
 const AddPet = () => {
   const [nomePet, setNomePet] = useState('');
@@ -10,11 +11,24 @@ const AddPet = () => {
   const [raca, setRaca] = useState('');
   const [sexo, setSexo] = useState('');
   const [porte, setPorte] = useState('');
+  const [comportamento, setComportamento] = useState('');
   const [idade, setIdade] = useState('');
+  const [cidade, setCidade] = useState('');
+  const [rua, setRua] = useState('');
   const [breeds, setBreeds] = useState([]);
   const [outroTipo, setOutroTipo] = useState('');
   const [foto, setFoto] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [idUsuario, setIdUsuario] = useState(null);
+
+  useEffect(() => {
+    const fetchUserId = async () => {
+      const id = await getUserId();
+      setIdUsuario(id);
+      console.log('ID do Usuário:', id); 
+    };
+    fetchUserId();
+  }, []);
 
   useEffect(() => {
     fetch('https://api.thedogapi.com/v1/breeds')
@@ -44,7 +58,7 @@ const AddPet = () => {
   };
 
   const validarFormulario = () => {
-    if (!nomePet || !tipoPet || !raca || !sexo || !porte || !idade) {
+    if (!nomePet || !tipoPet || !raca || !sexo || !porte || !comportamento || !idade || !cidade || !rua) {
       Alert.alert('Erro', 'Por favor, preencha todos os campos obrigatórios.');
       return false;
     }
@@ -55,13 +69,18 @@ const AddPet = () => {
     if (!validarFormulario()) return;
 
     console.log('Iniciando o registro do pet...');
+
     const petData = new FormData();
     petData.append('nome', nomePet);
     petData.append('tipo', tipoPet === 'Outro' ? outroTipo : tipoPet);
     petData.append('raca', raca);
     petData.append('sexo', sexo);
     petData.append('porte', porte);
+    petData.append('comportamento', comportamento);
     petData.append('idade', idade);
+    petData.append('cidade', cidade);
+    petData.append('rua', rua);
+    petData.append('fk_usuario_id', idUsuario);
 
     if (foto) {
       petData.append('foto', {
@@ -89,6 +108,8 @@ const AddPet = () => {
         setSexo('');
         setPorte('');
         setIdade('');
+        setCidade('');
+        setRua('');
         setOutroTipo('');
         setFoto(null);
       } else {
@@ -103,6 +124,7 @@ const AddPet = () => {
       setLoading(false);
     }
   };
+  
 
   return (
     <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
@@ -159,8 +181,10 @@ const AddPet = () => {
         value={sexo}
       />
 
-      <CustomTextInput placeholder="Cidade" />
-      <CustomTextInput placeholder="Rua" />
+      <CustomTextInput placeholder="Comportamento" value={comportamento} onChangeText={setComportamento} />
+
+      <CustomTextInput placeholder="Cidade" value={cidade} onChangeText={setCidade} />
+      <CustomTextInput placeholder="Rua" value={rua} onChangeText={setRua} />
 
       <TouchableOpacity style={styles.button} onPress={RegistraPet} disabled={loading}>
         {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Cadastrar</Text>}

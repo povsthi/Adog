@@ -87,6 +87,11 @@ app.get('/pets/:id', (req, res) => {
     const id = req.params.id; 
     execSQLQuery(`SELECT * FROM Pet WHERE ID_Animal = ?`, [id], res); 
 });
+
+app.get('/pets/:idUsuario', (req, res) => { 
+    const idUsuario = req.params.idUsuario; 
+    execSQLQuery(`SELECT * FROM Pet WHERE FK_Usuario_ID = ?`, [idUsuario], res); 
+});
   
 
 app.post('/usuarios', (req, res) => {
