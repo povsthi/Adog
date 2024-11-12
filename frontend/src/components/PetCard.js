@@ -2,13 +2,18 @@ import React from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 
 const PetCard = ({ pet, onPress }) => {
-  const imageSource = pet.foto ? { uri: `http://192.168.2.107:3001/uploads/${pet.foto}` } : null;
+  //const imageSource = pet.foto ? { uri: `http://localhost:3001/uploads/${pet.foto}` } : null;
+  
 
   return (
     <TouchableOpacity onPress={onPress}>
       <View style={styles.card}>
-        {imageSource && <Image source={imageSource} style={styles.image} />}
         <View style={styles.info}>
+        <Image
+        source={{
+          require: 'https://i.imgur.com/9TtOE7c.jpeg',
+        }}
+        />
           <Text style={styles.nome}>{pet.Nome}</Text>
           <Text style={styles.raca}>{pet.Raca}</Text>
           <Text style={styles.comportamento}>Comportamento: {pet.Comportamento || 'Desconhecido'}</Text>

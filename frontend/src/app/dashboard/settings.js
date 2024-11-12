@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, Modal, TextInput, Button } from 'react-native';
 import { Ionicons, FontAwesome, Entypo } from '@expo/vector-icons';
 import { getUserId } from '../storage'; 
+import RoundedButton from '../../components/RoundedButton';
 
 const SettingsScreen = ({ navigation }) => {
     const [nome, setNome] = useState('');
@@ -62,6 +63,28 @@ const SettingsScreen = ({ navigation }) => {
         }
     };
 
+    const Deletar = async () => {
+        try {
+            let response = await fetch(`http://localhost:3000/usuarios/${idUsuario}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                },
+            });
+    
+            if (response.ok) {
+                console.log(`Usuário com ID ${idUsuario} deletado com sucesso.`);
+                navigation.goBack(); 
+            } else {
+                console.log(`Erro ao deletar o usuário: ${response.statusText}`);
+            }
+        } catch (err) {
+            console.log("Erro ao deletar usuário:", err);
+        }
+    };
+    
+
     return (
         <View style={styles.container}>
             <View style={styles.profileContainer}>
@@ -119,8 +142,11 @@ const SettingsScreen = ({ navigation }) => {
                             placeholder="Email"
                             style={styles.input}
                         />
-                        <Button title="Salvar" onPress={Atualizar} />
-                        <Button title="Cancelar" onPress={() => setModalVisible(false)} />
+                         <RoundedButton title="Salvar" onPress={Atualizar} />
+                         <RoundedButton title="Cancelar" onPress={() => setModalVisible(false)}  />
+                        <TouchableOpacity style={styles.button} onPress={Deletar}>
+                        <Text style={styles.buttonText}>Deletar conta</Text>
+                        </TouchableOpacity>
                     </View>
                 </View>
             </Modal>
@@ -201,6 +227,19 @@ const styles = StyleSheet.create({
         borderColor: '#ccc',
         padding: 10,
         marginBottom: 15,
+    },
+    button: {
+        borderWidth: 1,
+        borderColor: '#B22222',
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        borderRadius: 20,
+        alignItems: 'center',
+    },
+    buttonText: {
+        color: '#B22222',
+        fontSize: 16,
+        fontWeight: 'bold',
     },
 });
 

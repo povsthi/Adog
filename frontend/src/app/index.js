@@ -2,11 +2,21 @@ import React, { useEffect } from 'react';
 import { View, Image, StyleSheet } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from 'expo-router';
+import { getUserId } from './storage';
 
 const SplashScreen = () => {
     const router = useRouter();
   
     useEffect(() => {
+        const fetchUserId = async () => {
+            const id = await getUserId();
+            console.log("ID do usuário: " + id);
+            //setIdUsuario(id);
+            if(id){
+              router.replace('/dashboard');
+            }
+          };
+          fetchUserId();
         const timer = setTimeout(() => {
             router.replace('/signin'); 
         }, 2000);

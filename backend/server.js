@@ -67,7 +67,7 @@ app.get('/', (req, res) => {
     res.send('Hello World!');
 });
 
-app.get('/usuarios', (req, res) => {
+app.get('/usuarios', middlewareValidarJWT, (req, res) => {
     const id = [];
     execSQLQuery("SELECT * from Usuario", id, res);
 });

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, View, Text, StyleSheet, ActivityIndicator, Alert, Modal, TextInput, Button } from 'react-native';
+import { ScrollView, View, Text, StyleSheet, ActivityIndicator, Alert, Modal, TextInput, TouchableOpacity } from 'react-native';
 import { getUserId } from '../storage';
 import PetCard from '../../components/PetCard';
+import RoundedButton from '../../components/RoundedButton'
 
 const MyPets = () => {
   const [pets, setPets] = useState([]);
@@ -53,7 +54,7 @@ const MyPets = () => {
     setModalVisible(false);
   };
 
-  const handleSave = async () => {
+  const Atualizar = async () => {
     try {
       const response = await fetch(`http://localhost:3001/pets/${selectedPet.id}`, {
         method: 'PUT',
@@ -76,7 +77,7 @@ const MyPets = () => {
     }
   };
 
-  const handleDelete = async () => {
+  const Deletar = async () => {
     try {
       const response = await fetch(`http://localhost:3001/pets/${selectedPet.id}`, {
         method: 'DELETE',
@@ -142,9 +143,11 @@ const MyPets = () => {
             />
 
             <View style={styles.buttonContainer}>
-              <Button title="Salvar" onPress={handleSave} />
-              <Button title="Deletar" onPress={handleDelete} color="red" />
-              <Button title="Cancelar" onPress={closeEditModal} color="gray" />
+              <RoundedButton title="Salvar" onPress={Atualizar} />
+              <RoundedButton title="Cancelar" onPress={() => setModalVisible(false)}  />
+              <TouchableOpacity style={styles.button} onPress={Deletar}>
+              <Text style={styles.buttonText}>Deletar Pet</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </View>
@@ -193,6 +196,19 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginTop: 10,
   },
+  button: {
+    margin: 10,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: '#B22222',
+    borderRadius: 20,
+    alignItems: 'center',
+},
+buttonText: {
+    color: '#B22222',
+    fontWeight: 'bold',
+    textAlign: 'center',
+},
 });
 
 export default MyPets;
