@@ -88,10 +88,11 @@ app.get('/pets/:id', (req, res) => {
     execSQLQuery(`SELECT * FROM Pet WHERE ID_Animal = ?`, [id], res); 
 });
 
-app.get('/pets/:idUsuario', (req, res) => { 
+app.get('/pets/usuario/:idUsuario', (req, res) => { 
     const idUsuario = req.params.idUsuario; 
     execSQLQuery(`SELECT * FROM Pet WHERE FK_Usuario_ID = ?`, [idUsuario], res); 
-});
+  });
+  
   
 
 app.post('/usuarios', (req, res) => {
@@ -106,6 +107,20 @@ app.post('/usuarios', (req, res) => {
     `;
 
     execSQLQuery(query, id, res);
+});
+
+app.put('/usuarios/:idUsuario', (req, res) => {
+    const idUsuario = req.params.idUsuario; 
+    const { email, senha, nome, cpf, tipo, foto, data_nascimento, morada, latitude, longitude, usuario_tipo } = req.body;
+
+    const query = `
+        UPDATE Usuario 
+        SET Email = ?, Senha = ?, Nome = ?, CPF = ?, Tipo = ?, Foto = ?, Data_nascimento = ?, Morada = ?, Latitude = ?, Longitude = ?, Usuario_TIPO = ?
+        WHERE idUsuario = ?
+    `;
+
+    const params = [email, senha, nome, cpf, tipo, foto, data_nascimento, morada, latitude, longitude, usuario_tipo, idUsuario];
+    execSQLQuery(query, params, res);
 });
 
 app.delete('/usuarios/:id', (req, res) => {
@@ -197,11 +212,61 @@ app.post('/pets', upload.single('foto'), (req, res) => {
   });
 });
 
+app.put('/pets/:id', upload.single('foto'), (req, res) => {
+    console.log('Recebendo requisição PUT em /pets/:id');
+  
+    const petId = req.params.id;
+    const { tipo, raca, nome, sexo, idade, porte, comportamento, cidade, rua, fk_usuario_id, fk_raca_id } = req.body;
+    const foto = req.file ? req.file.filename : null;
+  
+    const petData = [tipo, raca, nome, sexo, idade, porte, comportamento, cidade, rua, fk_usuario_id, fk_raca_id, petId];
+  
+    const petQuery = `
+      UPDATE Pet
+      SET Tipo = ?, Raca = ?, Nome = ?, Sexo = ?, Idade = ?, Porte = ?, Comportamento = ?, Cidade = ?, Rua = ?, FK_Usuario_ID = ?, FK_Raca_ID = ?
+      WHERE ID = ?
+    `;
+  
+    const connection = mysql.createConnection(db);
+    connection.connect();
+  
+    connection.query(petQuery, petData, (error, result) => {
+      if (error) {
+        console.error("Erro ao atualizar o pet:", error);
+        res.status(500).json({ error: 'Erro ao atualizar o pet' });
+        connection.end();
+        return;
+      }
+  
+      if (foto) {
+        const fotoQuery = `
+          UPDATE Foto
+          SET URL = ?
+          WHERE FK_Pet_ID_Animal = ?
+        `;
+  
+        connection.query(fotoQuery, [foto, petId], (fotoError) => {
+          connection.end();
+          if (fotoError) {
+            console.error("Erro ao atualizar a foto:", fotoError);
+            res.status(500).json({ error: 'Erro ao atualizar a foto do pet' });
+          } else {
+            res.status(200).send('Pet atualizado com sucesso, com nova foto.');
+          }
+        });
+      } else {
+        connection.end();
+        res.status(200).send('Pet atualizado com sucesso, sem alteração na foto.');
+      }
+    });
+  });
+  
+
 app.delete('/pets/:id', (req, res) => {
     const idPet = req.params.id; 
     const query = `DELETE FROM Pet WHERE ID_Animal = ?`;
 
-    execSQLQuery(query, [id], res);
+    execSQLQuery(query, [idPet], res);
 });
 
 

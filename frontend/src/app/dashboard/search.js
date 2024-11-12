@@ -1,55 +1,73 @@
-import React, { useState, useEffect } from 'react';
-import { View, TextInput, FlatList, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, TextInput, Text, StyleSheet, ScrollView, ActivityIndicator, Alert } from 'react-native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import PetCard from '../../components/PetCard';
 
 const SearchPets = () => {
+  const [searchTerm, setSearchTerm] = useState('');
   const [pets, setPets] = useState([]);
-  const [searchText, setSearchText] = useState('');
-  const [filteredPets, setFilteredPets] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [isFocused, setIsFocused] = useState(false); 
 
-  const fetchPets = async () => {
+  const handleSearch = async () => {
+    if (!searchTerm.trim()) {
+      Alert.alert('Erro', 'Por favor, insira um nome para pesquisar.');
+      return;
+    }
+
     try {
-      const response = await fetch('http://192.168.2.107:3001/pets');
-      const data = await response.json();
-      setPets(data);
-      setFilteredPets(data);
+      setLoading(true);
+      const response = await fetch(`http://localhost:3001/pets?nome=${searchTerm}`);
+      if (response.ok) {
+        const data = await response.json();
+        setPets(data);
+      } else {
+        Alert.alert('Erro', 'Não foi possível realizar a pesquisa.');
+      }
     } catch (error) {
       console.error('Erro ao buscar pets:', error);
-    }
-  };
-
-  useEffect(() => {
-    fetchPets();
-  }, []);
-
-  const filterPets = (text) => {
-    setSearchText(text);
-    if (text) {
-      const filtered = pets.filter((pet) =>
-        pet.nome.toLowerCase().includes(text.toLowerCase()) ||
-        pet.raca.toLowerCase().includes(text.toLowerCase()) ||
-        (pet.cidade && pet.cidade.toLowerCase().includes(text.toLowerCase()))
-      );
-      setFilteredPets(filtered);
-    } else {
-      setFilteredPets(pets);
+      Alert.alert('Erro', 'Ocorreu um erro ao buscar os pets.');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <View style={styles.container}>
-      <TextInput
-        style={styles.searchBar}
-        placeholder="Pesquisar pets..."
-        value={searchText}
-        onChangeText={(text) => filterPets(text)}
-      />
-      <FlatList
-        data={filteredPets}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => <PetCard pet={item} />}
-        contentContainerStyle={styles.listContainer}
-      />
+      <View
+        style={[
+          styles.searchContainer,
+          { borderColor: isFocused ? '#4CAF50' : '#ccc' }, 
+        ]}
+      >
+        <Ionicons name="search" size={20} color="#ccc" style={styles.searchIcon} />
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Digite o nome do pet"
+          value={searchTerm}
+          onChangeText={setSearchTerm}
+          onSubmitEditing={handleSearch}
+          returnKeyType="search"
+          placeholderTextColor="#aaa"
+          onFocus={() => setIsFocused(true)} 
+          onBlur={() => setIsFocused(false)}  
+        />
+      </View>
+      {loading ? (
+        <ActivityIndicator size="large" color="#0000ff" />
+      ) : pets.length > 0 ? (
+        <ScrollView style={styles.resultsContainer}>
+          {pets.map((pet) => (
+            <PetCard
+              key={pet.id}
+              pet={pet}
+              onPress={() => Alert.alert('Detalhes do Pet', `Você selecionou ${pet.Nome}`)}
+            />
+          ))}
+        </ScrollView>
+      ) : (
+        <Text style={styles.noResultsText}>Nenhum pet encontrado.</Text>
+      )}
     </View>
   );
 };
@@ -57,20 +75,42 @@ const SearchPets = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    padding: 16,
     backgroundColor: '#fff',
   },
-  searchBar: {
-    height: 50,
-    borderColor: '#000080',
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 15,
-    margin: 15,
-    fontSize: 16,
+    borderRadius: 8,
+    marginBottom: 20,
+    backgroundColor: '#fff',
+    paddingLeft: 10,
   },
-  listContainer: {
-    padding: 15,
+  searchIcon: {
+    position: 'absolute',
+    left: 10,
+    zIndex: 1,
+  },
+  searchInput: {
+    flex: 1,
+    height: 40,
+    paddingLeft: 30, 
+    color: '#000',
+  },
+  resultsContainer: {
+    marginTop: 10,
+  },
+  noResultsText: {
+    marginTop: 20,
+    fontSize: 16,
+    color: '#999',
+    textAlign: 'center',
   },
 });
 
 export default SearchPets;
+
+
+
+
