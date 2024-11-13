@@ -352,6 +352,11 @@ app.post('/likes', async (req, res) => {
     }
 });
 
+app.get('/likes', (req, res) => {
+    const id = [];
+    execSQLQuery("SELECT * from Adota_Like", id, res);
+});
+
 app.delete('/likes/:id', (req, res) => {
     const { id } = req.params;
 
@@ -407,7 +412,7 @@ app.get('/matchs/:id', (req, res) => {
 });
 
 app.post('/favoritas', (req, res) => {
-    const { FK_Pet_ID_Animal, FK_Usuario_ID } = req.body;
+    const { idUsuario, idPet } = req.body;
 
     console.log('Recebendo requisição POST em /favoritas');
     console.log('Dados recebidos:', req.body);
@@ -417,7 +422,7 @@ app.post('/favoritas', (req, res) => {
         VALUES (?, ?)
     `;
 
-    const params = [FK_Pet_ID_Animal, FK_Usuario_ID];
+    const params = [idUsuario, idPet];
     execSQLQuery(query, params, res);
 });
 
