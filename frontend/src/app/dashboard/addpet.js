@@ -31,19 +31,31 @@ const AddPet = () => {
   }, []);
 
   useEffect(() => {
-    fetch('https://api.thedogapi.com/v1/breeds')
-      .then(response => response.json())
-      .then(data => {
+    const fetchBreeds = async () => {
+      let url = '';
+      if (tipoPet === 'Cachorro') {
+        url = 'https://api.thedogapi.com/v1/breeds';
+      } else if (tipoPet === 'Gato') {
+        url = 'https://api.thecatapi.com/v1/breeds';
+      }
+
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
         const breedOptions = data.map(breed => ({
           label: breed.name,
           value: breed.name,
         }));
         setBreeds(breedOptions);
-      })
-      .catch(error => {
+      } catch (error) {
         console.error('Erro ao buscar raça:', error);
-      });
-  }, []);
+      }
+    };
+
+    if (tipoPet) {
+      fetchBreeds();
+    }
+  }, [tipoPet]);
 
   const selecionarFoto = () => {
     launchImageLibrary({ mediaType: 'photo' }, (response) => {
@@ -151,6 +163,14 @@ const AddPet = () => {
       />
 
       <RNPickerSelect
+        onValueChange={(value) => setRaca(value)}
+        items={breeds}
+        placeholder={{ label: 'Raça', value: '' }}
+        style={pickerStyles}
+        value={raca}
+      />
+
+      <RNPickerSelect
         onValueChange={(value) => setPorte(value)}
         items={[
           { label: 'Pequeno', value: 'Pequeno' },
@@ -160,14 +180,6 @@ const AddPet = () => {
         placeholder={{ label: 'Porte', value: '' }}
         style={pickerStyles}
         value={porte}
-      />
-
-      <RNPickerSelect
-        onValueChange={(value) => setRaca(value)}
-        items={breeds}
-        placeholder={{ label: 'Raça', value: '' }}
-        style={pickerStyles}
-        value={raca}
       />
 
       <RNPickerSelect

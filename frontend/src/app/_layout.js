@@ -9,7 +9,7 @@ export default function Layout() {
   const router = useRouter(); 
 
   const handleNotificationPress = () => {
-    router.push('/notifications'); 
+    router.push('/notfications'); 
   };
 
   const handleLogoPress = () => {
@@ -27,17 +27,13 @@ export default function Layout() {
         headerStyle: {
           backgroundColor: '#212A75',
         },
+        headerTintColor: '#FFF', 
       }}
     >
       <Stack.Screen 
         name="index" 
         options={{ 
           headerShown: false, 
-          headerRight: () => ( 
-            <TouchableOpacity onPress={handleNotificationPress} style={{ marginRight: 10 }}>
-              <Ionicons name="notifications-outline" size={24} color="#FFF" />
-            </TouchableOpacity>
-          ),
         }} 
       />
       <Stack.Screen 
@@ -54,6 +50,13 @@ export default function Layout() {
       />
       <Stack.Screen 
         name="dashboard" 
+        options={{
+          headerRight: () => ( 
+            <TouchableOpacity onPress={handleNotificationPress} style={{ marginRight: 10 }}>
+              <Ionicons name="notifications-outline" size={24} color="#FFF" />
+            </TouchableOpacity>
+          ),
+        }}
       />
       <Stack.Screen 
         name="petprofile" 
@@ -69,7 +72,8 @@ export default function Layout() {
       />
     </Stack>
   );
-} 
+}
+
 
 
 

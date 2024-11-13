@@ -4,7 +4,6 @@ const mysql = require('mysql2');
 const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
-const uploadDir = './uploads';
 
 const port = 3001;
 
@@ -91,9 +90,7 @@ app.get('/pets/:id', (req, res) => {
 app.get('/pets/usuario/:idUsuario', (req, res) => { 
     const idUsuario = req.params.idUsuario; 
     execSQLQuery(`SELECT * FROM Pet WHERE FK_Usuario_ID = ?`, [idUsuario], res); 
-  });
-  
-  
+  });  
 
 app.post('/usuarios', (req, res) => {
     console.log('Recebendo requisição POST em /usuarios');
@@ -153,64 +150,76 @@ app.post('/login', async (req, res) => {
     console.log("brilhou");
 });
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname));
-  },
-});
+const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-
-app.post('/pets', upload.single('foto'), (req, res) => {
-  console.log('Recebendo requisição POST em /pets');
+async function uploadToImgur(imageBuffer) {
+    const formData = new FormData();
+    formData.append('image', imageBuffer.toString('base64')); 
   
-  const { tipo, raca, nome, sexo, idade, porte, comportamento, cidade, rua, fk_usuario_id, fk_raca_id } = req.body;
-  const foto = req.file ? req.file.filename : null; 
-
-  const petData = [tipo, raca, nome, sexo, idade, porte, comportamento, cidade, rua, fk_usuario_id, fk_raca_id];
-
-  const petQuery = `
-    INSERT INTO Pet (Tipo, Raca, Nome, Sexo, Idade, Porte, Comportamento, Cidade, Rua, FK_Usuario_ID, FK_Raca_ID)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `;
-
-  const connection = mysql.createConnection(db);
-  connection.connect();
-
-  connection.query(petQuery, petData, (error, result) => {
-    if (error) {
-      console.error("Erro ao cadastrar o pet:", error);
-      res.status(500).json({ error: 'Erro ao cadastrar o pet' });
-      connection.end();
-      return;
-    }
-
-    const petId = result.insertId;
-    console.log('ID do pet cadastrado:', petId);
-
-    if (foto) {
-      const fotoQuery = `
-        INSERT INTO Foto (URL, FK_Pet_ID_Animal)
-        VALUES (?, ?)
-      `;
-      connection.query(fotoQuery, [foto, petId], (fotoError) => {
-        connection.end();
-        if (fotoError) {
-          console.error("Erro ao salvar a foto:", fotoError);
-          res.status(500).json({ error: 'Erro ao salvar a foto do pet' });
-        } else {
-          res.status(200).send('Pet cadastrado com sucesso, com foto.');
-        }
+    try {
+      const response = await axios.post('https://api.imgur.com/3/image', formData, {
+        headers: {
+          Authorization: `Client-ID 1528cabed767a7e`,
+          'Content-Type': 'multipart/form-data',
+        },
       });
-    } else {
-      connection.end();
-      res.status(200).send('Pet cadastrado com sucesso, sem foto.');
+      return response.data.data.link; 
+    } catch (error) {
+      console.error("Erro ao fazer upload para o Imgur:", error);
+      throw new Error("Erro ao fazer upload da imagem.");
     }
+  }
+  
+  app.post('/pets', upload.single('foto'), async (req, res) => {
+    console.log('Recebendo requisição POST em /pets');
+    
+    const { tipo, raca, nome, sexo, idade, porte, comportamento, cidade, rua, fk_usuario_id, fk_raca_id } = req.body;
+    const fotoBuffer = req.file ? req.file.buffer : null; 
+  
+    const petData = [tipo, raca, nome, sexo, idade, porte, comportamento, cidade, rua, fk_usuario_id, fk_raca_id];
+  
+    const connection = mysql.createConnection(db);
+    connection.connect();
+  
+    connection.query(petQuery, petData, async (error, result) => {
+      if (error) {
+        console.error("Erro ao cadastrar o pet:", error);
+        res.status(500).json({ error: 'Erro ao cadastrar o pet' });
+        connection.end();
+        return;
+      }
+  
+      const petId = result.insertId;
+      console.log('ID do pet cadastrado:', petId);
+  
+      if (fotoBuffer) {
+        try {
+          const imgurUrl = await uploadToImgur(fotoBuffer);
+  
+          const fotoQuery = `
+            INSERT INTO Foto (URL, FK_Pet_ID_Animal)
+            VALUES (?, ?)
+          `;
+          connection.query(fotoQuery, [imgurUrl, petId], (fotoError) => {
+            connection.end();
+            if (fotoError) {
+              console.error("Erro ao salvar a URL da foto:", fotoError);
+              res.status(500).json({ error: 'Erro ao salvar a URL da foto do pet' });
+            } else {
+              res.status(200).send('Pet cadastrado com sucesso, com foto.');
+            }
+          });
+        } catch (uploadError) {
+          console.error(uploadError.message);
+          res.status(500).json({ error: 'Erro ao fazer upload da imagem para o Imgur.' });
+        }
+      } else {
+        connection.end();
+        res.status(200).send('Pet cadastrado com sucesso, sem foto.');
+      }
+    });
   });
-});
 
 app.put('/pets/:id', upload.single('foto'), (req, res) => {
     console.log('Recebendo requisição PUT em /pets/:id');
@@ -426,6 +435,18 @@ app.delete('/favoritas/:id', (req, res) => {
     const params = [id];
     execSQLQuery(query, params, res);
 });
+
+app.get('/favoritas', (req, res) => {
+    const id = [];
+    execSQLQuery("SELECT * from Favorita", id, res);
+});
+
+app.get('/favoritas/:idUsuario', (req, res) => { 
+    const idUsuario = req.params.idUsuario; 
+    execSQLQuery(`SELECT * FROM Pet WHERE FK_Usuario_ID = ?`, [idUsuario], res); 
+});
+
+
 
 app.listen(port, () => {
     console.log(`App escutando na porta ${port}`);
