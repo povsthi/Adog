@@ -253,28 +253,33 @@ const pickerStyles = StyleSheet.create({
     paddingHorizontal: 10,
     borderWidth: 1,
     borderColor: '#ccc',
-    borderRadius: 4,
+    borderRadius: 8,
     color: '#333',
+    backgroundColor: '#f9f9f9',
     paddingRight: 30,
     marginVertical: 10,
     width: '90%',
+    height: 50, 
   },
   inputAndroid: {
     fontSize: 16,
+    paddingVertical: 12,
     paddingHorizontal: 10,
-    paddingVertical: 8,
     borderWidth: 1,
     borderColor: '#ccc',
-    borderRadius: 4,
+    borderRadius: 8,
     color: '#333',
+    backgroundColor: '#f9f9f9',
     paddingRight: 30,
     marginVertical: 10,
     width: '90%',
+    height: 50, 
   },
   placeholder: {
     color: '#999',
   },
 });
+
 
 export default AddPet;
 

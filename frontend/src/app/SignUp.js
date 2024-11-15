@@ -12,7 +12,6 @@ const SignUp = () => {
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [data, setDataNascimento] = useState('');
-  const [cpf, setCpf] = useState('');
   const [senha, setSenha] = useState('');
   const [confirmarSenha, setConfirmarSenha] = useState('');
   const [moradia, setMoradia] = useState('');
@@ -41,20 +40,6 @@ const SignUp = () => {
       console.error(error);
       Alert.alert('Erro', 'Houve um problema ao solicitar permissões de localização.');
     }
-  };
-
-  const formatCPF = (text) => {
-    let cpf = text.replace(/\D/g, '');
-
-    if (cpf.length > 11) {
-        cpf = cpf.slice(0, 11);
-    }
-
-    cpf = cpf.replace(/(\d{3})(\d)/, '$1.$2');
-    cpf = cpf.replace(/(\d{3})(\d)/, '$1.$2');
-    cpf = cpf.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
-
-    return cpf;
   };
 
   const formatData = (text) => {
@@ -86,7 +71,7 @@ const SignUp = () => {
   };
 
   const Cadastrar = async () => { 
-    if (!nome || !email || !senha || !confirmarSenha || !cpf || !moradia) {
+    if (!nome || !email || !senha || !confirmarSenha || !moradia) {
       Alert.alert('Erro', 'Todos os campos são obrigatórios!');
       return;
     }
@@ -96,7 +81,7 @@ const SignUp = () => {
       return;
     }
   
-    const userObj = { nome, email, senha, cpf, moradia, latitude: location.latitude, longitude: location.longitude };
+    const userObj = { nome, email, senha, moradia, latitude: location.latitude, longitude: location.longitude };
     const jsonBody = JSON.stringify(userObj);
     console.log(jsonBody);
   
@@ -150,9 +135,6 @@ const SignUp = () => {
           <TouchableOpacity onPress={() => setMoradia('Apartamento')}>
             <Text style={[styles.option, moradia === 'Apartamento' && styles.selectedOption]}>Apartamento</Text>
           </TouchableOpacity>
-
-          <Label text="CPF" />
-          <CustomTextInput placeholder="Digite seu CPF" value={cpf} onChangeText={text => setCpf(formatCPF(text))} />
 
           <Label text="Senha" />
           <CustomTextInput

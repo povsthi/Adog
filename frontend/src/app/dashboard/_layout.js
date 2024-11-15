@@ -1,4 +1,5 @@
 import { Tabs } from 'expo-router';
+import { NavigationContainer } from '@react-navigation/native';
 import { Ionicons, Feather } from '@expo/vector-icons';
 
 export default function Layout() {

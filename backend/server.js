@@ -5,7 +5,7 @@ const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
 
-const port = 3001;
+const port = 8080;
 
 app.use(express.static("public"));
 app.use(cors());
@@ -112,11 +112,11 @@ app.put('/usuarios/:idUsuario', (req, res) => {
 
     const query = `
         UPDATE Usuario 
-        SET Email = ?, Senha = ?, Nome = ?, CPF = ?, Tipo = ?, Foto = ?, Data_nascimento = ?, Morada = ?, Latitude = ?, Longitude = ?, Usuario_TIPO = ?
+        SET Email = ?, Senha = ?, Nome = ?, Tipo = ?, Foto = ?, Data_nascimento = ?, Morada = ?, Latitude = ?, Longitude = ?, Usuario_TIPO = ?
         WHERE idUsuario = ?
     `;
 
-    const params = [email, senha, nome, cpf, tipo, foto, data_nascimento, morada, latitude, longitude, usuario_tipo, idUsuario];
+    const params = [email, senha, nome, tipo, foto, data_nascimento, morada, latitude, longitude, usuario_tipo, idUsuario];
     execSQLQuery(query, params, res);
 });
 
@@ -174,10 +174,10 @@ async function uploadToImgur(imageBuffer) {
   app.post('/pets', upload.single('foto'), async (req, res) => {
     console.log('Recebendo requisição POST em /pets');
     
-    const { tipo, raca, nome, sexo, idade, porte, comportamento, cidade, rua, fk_usuario_id, fk_raca_id } = req.body;
+    const { tipo, raca, nome, sexo, idade, porte, comportamento, cidade, rua, fk_usuario_id } = req.body;
     const fotoBuffer = req.file ? req.file.buffer : null; 
   
-    const petData = [tipo, raca, nome, sexo, idade, porte, comportamento, cidade, rua, fk_usuario_id, fk_raca_id];
+    const petData = [tipo, raca, nome, sexo, idade, porte, comportamento, cidade, rua, fk_usuario_id];
   
     const connection = mysql.createConnection(db);
     connection.connect();
@@ -228,11 +228,11 @@ app.put('/pets/:id', upload.single('foto'), (req, res) => {
     const { tipo, raca, nome, sexo, idade, porte, comportamento, cidade, rua, fk_usuario_id, fk_raca_id } = req.body;
     const foto = req.file ? req.file.filename : null;
   
-    const petData = [tipo, raca, nome, sexo, idade, porte, comportamento, cidade, rua, fk_usuario_id, fk_raca_id, petId];
+    const petData = [tipo, raca, nome, sexo, idade, porte, comportamento, cidade, rua, fk_usuario_id, petId];
   
     const petQuery = `
       UPDATE Pet
-      SET Tipo = ?, Raca = ?, Nome = ?, Sexo = ?, Idade = ?, Porte = ?, Comportamento = ?, Cidade = ?, Rua = ?, FK_Usuario_ID = ?, FK_Raca_ID = ?
+      SET Tipo = ?, Raca = ?, Nome = ?, Sexo = ?, Idade = ?, Porte = ?, Comportamento = ?, Cidade = ?, Rua = ?, FK_Usuario_ID = ?, 
       WHERE ID = ?
     `;
   
@@ -449,6 +449,38 @@ app.get('/favoritas', (req, res) => {
 app.get('/favoritas/:idUsuario', (req, res) => { 
     const idUsuario = req.params.idUsuario; 
     execSQLQuery(`SELECT * FROM Pet WHERE FK_Usuario_ID = ?`, [idUsuario], res); 
+});
+
+app.get('/notificacoes/:usuarioId', async (req, res) => {
+    const { usuarioId } = req.params;
+
+    try {
+        const result = await pool.query(
+            'SELECT * FROM Notificacao WHERE FK_Usuario_ID = $1 ORDER BY DataNotificacao DESC',
+            [usuarioId]
+        );
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Erro ao obter notificações:', error);
+        res.status(500).json({ error: 'Erro ao obter notificações' });
+    }
+});
+
+app.post('/notificacoes', async (req, res) => {
+    const { FK_Usuario_ID, Tipo, Mensagem, FK_Pet_ID_Animal, FK_Like_ID } = req.body;
+
+    try {
+        const result = await pool.query(
+            `INSERT INTO Notificacao (FK_Usuario_ID, Tipo, Mensagem, FK_Pet_ID_Animal, FK_Like_ID)
+             VALUES ($1, $2, $3, $4, $5)
+             RETURNING *`,
+            [FK_Usuario_ID, Tipo, Mensagem, FK_Pet_ID_Animal, FK_Like_ID]
+        );
+        res.status(201).json(result.rows[0]);
+    } catch (error) {
+        console.error('Erro ao criar notificação:', error);
+        res.status(500).json({ error: 'Erro ao criar notificação' });
+    }
 });
 
 
