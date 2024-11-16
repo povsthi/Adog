@@ -28,7 +28,20 @@ const FavoritosScreen = () => {
             throw new Error('Erro ao buscar favoritos');
           }
           const data = await response.json();
-          setFavoritos(data);
+          
+          console.log('Favoritos:', data);
+          
+          const petsCompletos = await Promise.all(data.map(async (favorito) => {
+            const petResponse = await fetch(`${ipConf()}/pets/${favorito.FK_Pet_ID_Animal}`);
+            if (!petResponse.ok) {
+              throw new Error(`Erro ao buscar pet com ID: ${favorito.FK_Pet_ID_Animal}`);
+            }
+            const petData = await petResponse.json();
+            console.log('Pet Data:', petData);
+            return petData[0];  
+          }));
+          
+          setFavoritos(petsCompletos);
         } catch (err) {
           setError(err.message);
         } finally {
@@ -36,11 +49,12 @@ const FavoritosScreen = () => {
         }
       }
     };
-
+  
     if (idUsuario) {
       fetchFavoritos();
     }
   }, [idUsuario]);
+  
 
   if (loading) {
     return <ActivityIndicator size="large" color="#0000ff" />;
@@ -57,7 +71,7 @@ const FavoritosScreen = () => {
       ) : (
         <FlatList
           data={favoritos}
-          keyExtractor={(item) => item.ID_Animal.toString()}
+          keyExtractor={(item) => item.ID_Animal ? item.ID_Animal.toString() : 'no-id'}  
           renderItem={({ item }) => <PetCard pet={item} />}  
         />
       )}
@@ -79,5 +93,7 @@ const styles = StyleSheet.create({
 });
 
 export default FavoritosScreen;
+
+
 
 

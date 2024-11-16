@@ -12,14 +12,14 @@ const ProfilePet = () => {
   const navigation = useNavigation();
   const [pet, setPet] = useState(null);
   const [idUsuario, setIdUsuario] = useState(null);
-  const [isLiked, setIsLiked] = useState(false); 
-  const [isFavorited, setIsFavorited] = useState(false); 
+  const [isLiked, setIsLiked] = useState(false);
+  const [isFavorited, setIsFavorited] = useState(false);
 
   useEffect(() => {
     const fetchUserId = async () => {
       const id = await getUserId();
       setIdUsuario(id);
-      console.log('ID do Usuário:', id); 
+      console.log('ID do Usuário:', id);
     };
     fetchUserId();
   }, []);
@@ -34,8 +34,9 @@ const ProfilePet = () => {
             throw new Error('Erro na resposta da API');
           }
           const petData = await response.json();
-          setPet(petData[0]);  
+          setPet(petData[0]);
           console.log('Dados do Pet:', petData);
+          checkIfFavorited(petData[0].ID_Animal);
         } else {
           Alert.alert('Erro', 'Não foi possível carregar os dados do pet.');
         }
@@ -46,7 +47,29 @@ const ProfilePet = () => {
     };
     fetchPetData();
   }, []);
-  
+
+  const checkIfFavorited = async (petId) => {
+    try {
+      const response = await fetch(`${ipConf()}/favoritas/check`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          idUsuario: idUsuario,
+          idPet: petId,
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setIsFavorited(result.isFavorited);  
+      } else {
+        console.log('Erro ao verificar se o pet é favorito.');
+      }
+    } catch (error) {
+      console.error('Erro ao verificar se o pet é favorito:', error);
+    }
+  };
+
   const handleFavorite = async () => {
     console.log('Botão de Favoritar pressionado');
     try {
@@ -54,26 +77,57 @@ const ProfilePet = () => {
         Alert.alert('Erro', 'Dados insuficientes para favoritar o pet.');
         return;
       }
-      console.log('ID do Pet:', pet.ID_Animal); 
-      const response = await fetch(`${ipConf()}/favoritas`, { 
+
+      const response = await fetch(`${ipConf()}/favoritas`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          idUsuario: idUsuario,  
+        body: JSON.stringify({
+          idUsuario: idUsuario,
           idPet: pet.ID_Animal,
         }),
       });
+
       const result = await response.json();
       console.log('Resposta do servidor para favorito:', result);
+
       if (response.ok) {
-        setIsFavorited(true); 
+        setIsFavorited(true);
         Alert.alert('Favorito', `${pet.Nome} foi adicionado aos favoritos!`);
       } else {
-        Alert.alert('Erro', 'Falha ao favoritar');
+        if (result.message === 'Este pet já foi favoritado por este usuário.') {
+          Alert.alert('Erro', 'Este pet já foi favoritado por você.');
+        } else {
+          Alert.alert('Erro', 'Falha ao favoritar');
+        }
       }
     } catch (error) {
       console.error('Erro no handleFavorite:', error);
       Alert.alert('Erro', 'Não foi possível adicionar aos favoritos.');
+    }
+  };
+
+  const handleDesfavoritar = async () => {
+    try {
+      const response = await fetch(`${ipConf()}/desfavoritar`, {
+        method: 'DELETE',
+        body: JSON.stringify({
+          FK_Usuario_ID: idUsuario,
+          FK_Pet_ID_Animal: pet.ID_Animal,
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        setIsFavorited(false); 
+        Alert.alert('Desfavoritado', `${pet.Nome} foi removido dos favoritos!`);
+      } else {
+        const error = await response.json();
+        Alert.alert('Erro', error.message);
+      }
+    } catch (err) {
+      Alert.alert('Erro ao desfavoritar o pet!');
     }
   };
 
@@ -92,6 +146,7 @@ const ProfilePet = () => {
           idPet: pet.ID_Animal,
         }),
       });
+
       console.log('Tentando enviar o like...');
       if (response.ok) {
         const responseData = await response.json();
@@ -142,7 +197,7 @@ const ProfilePet = () => {
         <TouchableOpacity onPress={handleLike}>
           <Ionicons name={isLiked ? "heart" : "heart-outline"} size={32} color="#212A75" />
         </TouchableOpacity>
-        <TouchableOpacity onPress={handleFavorite}>
+        <TouchableOpacity onPress={isFavorited ? handleDesfavoritar : handleFavorite}>
           <Ionicons name={isFavorited ? "star" : "star-outline"} size={32} color="#212A75" />
         </TouchableOpacity>
         <TouchableOpacity onPress={handleBack}>

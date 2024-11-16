@@ -417,29 +417,38 @@ app.post('/favoritas', (req, res) => {
     console.log('Recebendo requisição POST em /favoritas');
     console.log('Dados recebidos:', req.body);
 
-    const query = `
-        INSERT INTO Favorita (FK_Pet_ID_Animal, FK_Usuario_ID)
-        VALUES (?, ?)
+    const checkQuery = `
+        SELECT * FROM Favorita WHERE FK_Usuario_ID = ? AND FK_Pet_ID_Animal = ?
     `;
+    const checkParams = [idUsuario, idPet];
 
-    const params = [idUsuario, idPet];
-    execSQLQuery(query, params, res);
+    execSQLQuery(checkQuery, checkParams, (checkResult) => {
+        if (checkResult.length > 0) {
+            return res.status(400).json({ message: 'Este pet já foi favoritado por este usuário.' });
+        }
+        const insertQuery = `
+            INSERT INTO Favorita (FK_Pet_ID_Animal, FK_Usuario_ID)
+            VALUES (?, ?)
+        `;
+        const insertParams = [idPet, idUsuario];
+        execSQLQuery(insertQuery, insertParams, (insertResult) => {
+            res.status(200).json({ message: 'Pet favoritado com sucesso!' });
+        });
+    });
 });
 
-app.delete('/favoritas/:id', (req, res) => {
-    const { id } = req.params;
 
-    console.log('Recebendo requisição DELETE em /favoritas');
-    console.log('ID do favorito a ser removido:', id);
-
-    const query = `
-        DELETE FROM Favorita
-        WHERE IDFavorito = ?
-    `;
-
-    const params = [id];
-    execSQLQuery(query, params, res);
-});
+app.delete('/desfavoritar', (req, res) => {
+    const { FK_Usuario_ID, FK_Pet_ID_Animal } = req.body;
+  
+    execSQLQuery(
+      'DELETE FROM Favoritos WHERE FK_Usuario_ID = ? AND FK_Pet_ID_Animal = ?',
+      [FK_Usuario_ID, FK_Pet_ID_Animal],
+      (result) => {
+        res.status(200).json({ message: 'Pet desfavoritado com sucesso!' });
+      }
+    );
+  });
 
 app.get('/favoritas', (req, res) => {
     const id = [];
@@ -448,7 +457,7 @@ app.get('/favoritas', (req, res) => {
 
 app.get('/favoritas/:idUsuario', (req, res) => { 
     const idUsuario = req.params.idUsuario; 
-    execSQLQuery(`SELECT * FROM Pet WHERE FK_Usuario_ID = ?`, [idUsuario], res); 
+    execSQLQuery(`SELECT * FROM Favorita WHERE FK_Usuario_ID = ?`, [idUsuario], res); 
 });
 
 app.get('/notificacoes/:usuarioId', async (req, res) => {
