@@ -10,7 +10,7 @@ const Home = () => {
 
   const fetchPets = async () => {
     try {
-      const response = await fetch('${ipConf()}/pets', {
+      const response = await fetch(`${ipConf()}/pets`, {
         headers: {
           'Content-Type': 'application/json',
         }

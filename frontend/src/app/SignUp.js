@@ -87,7 +87,7 @@ const SignUp = () => {
     console.log(jsonBody);
   
     try {
-      const response = await fetch('${ipConf()}/usuarios', {
+      const response = await fetch(`${ipConf()}/usuarios`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -100,13 +100,15 @@ const SignUp = () => {
       console.log("Resposta do servidor:", json);
   
       if (json.affectedRows && json.affectedRows > 0) {
-        if (json.userId) {
-          await storeUserId(json.id); 
+        const userId = json.id || json.userId; 
+        if (userId) {
+          await storeUserId(userId.toString()); 
         }
         router.replace('/dashboard');
       } else {
         Alert.alert('Erro', 'Falha no cadastro. Tente novamente.');
       }
+      
     } catch (err) {
       console.log(err);
       Alert.alert('Erro', 'Ocorreu um erro no cadastro.');

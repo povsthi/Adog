@@ -24,7 +24,7 @@ const SignIn = () => {
     const userObj = { email, senha };
     const jsonBody = JSON.stringify(userObj);
 
-    fetch('${ipConf()}/login', {
+    fetch(`${ipConf()}/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

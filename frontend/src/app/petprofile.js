@@ -55,7 +55,7 @@ const ProfilePet = () => {
         return;
       }
       console.log('ID do Pet:', pet.ID_Animal); 
-      const response = await fetch('${ipConf()}/favoritas', { 
+      const response = await fetch(`${ipConf()}/favoritas`, { 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -84,7 +84,7 @@ const ProfilePet = () => {
         return;
       }
       console.log('ID do Pet:', pet.ID_Animal); 
-      const response = await fetch('${ipConf()}/likes', {
+      const response = await fetch(`${ipConf()}/likes`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

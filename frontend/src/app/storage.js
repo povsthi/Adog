@@ -18,13 +18,14 @@ export const storeData = async (petId) => {
   };
   
 
-export const storeUserId = async (userId) => {
-  try {
-      await AsyncStorage.setItem('user-id', userId);
-  } catch (e) {
+  export const storeUserId = async (userId) => {
+    try {
+      await AsyncStorage.setItem('user-id', userId.toString()); 
+    } catch (e) {
       console.log(e);
-  }
-};
+    }
+  };
+  
 
 export const getUserId = async () => {
   try {

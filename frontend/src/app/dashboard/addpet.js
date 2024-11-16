@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { ScrollView, View, TouchableOpacity, Text, StyleSheet, Image, Alert, ActivityIndicator } from 'react-native';
 import CustomTextInput from '../../components/CustomTextInput';
-import RNPickerSelect from 'react-native-picker-select';
-import { launchImageLibrary } from 'react-native-image-picker';
-import { getUserId } from '../storage'
+import { launchImageLibraryAsync, MediaTypeOptions } from 'expo-image-picker';
+import DropDownPicker from 'react-native-dropdown-picker';
+import { getUserId } from '../storage';
+import ipConf from '../ipconfig';
 
 const AddPet = () => {
   const [nomePet, setNomePet] = useState('');
@@ -25,7 +26,7 @@ const AddPet = () => {
     const fetchUserId = async () => {
       const id = await getUserId();
       setIdUsuario(id);
-      console.log('ID do Usuário:', id); 
+      console.log('ID do Usuário:', id);
     };
     fetchUserId();
   }, []);
@@ -57,16 +58,16 @@ const AddPet = () => {
     }
   }, [tipoPet]);
 
-  const selecionarFoto = () => {
-    launchImageLibrary({ mediaType: 'photo' }, (response) => {
-      if (response.didCancel) {
-        console.log('Usuário cancelou a seleção de imagem');
-      } else if (response.errorMessage) {
-        console.error('Erro ao selecionar imagem:', response.errorMessage);
-      } else if (response.assets) {
-        setFoto(response.assets[0]);
-      }
+  const selecionarFoto = async () => {
+    const result = await launchImageLibraryAsync({
+      mediaTypes: MediaTypeOptions.Images,
+      allowsEditing: true,
+      quality: 1,
     });
+
+    if (!result.canceled) {
+      setFoto(result.assets[0]);
+    }
   };
 
   const validarFormulario = () => {
@@ -104,7 +105,7 @@ const AddPet = () => {
 
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:3001/pets', { 
+      const response = await fetch(`${ipConf()}/pets`, {
         method: 'POST',
         body: petData
       });
@@ -136,7 +137,6 @@ const AddPet = () => {
       setLoading(false);
     }
   };
-  
 
   return (
     <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
@@ -151,50 +151,56 @@ const AddPet = () => {
       <CustomTextInput placeholder="Nome" value={nomePet} onChangeText={setNomePet} />
       <CustomTextInput placeholder="Idade" value={idade} onChangeText={setIdade} />
 
-      <RNPickerSelect
-        onValueChange={(value) => setTipoPet(value)}
-        items={[ 
+      <DropDownPicker
+        items={[
           { label: 'Cachorro', value: 'Cachorro' },
           { label: 'Gato', value: 'Gato' },
+          { label: 'Outro', value: 'Outro' },
         ]}
-        placeholder={{ label: 'Tipo de pet', value: '' }}
-        style={pickerStyles}
-        value={tipoPet}
+        defaultValue={tipoPet}
+        placeholder="Tipo de pet"
+        containerStyle={styles.pickerContainer}
+        style={styles.picker}
+        onChangeItem={(item) => setTipoPet(item.value)}
       />
 
-      <RNPickerSelect
-        onValueChange={(value) => setRaca(value)}
-        items={breeds}
-        placeholder={{ label: 'Raça', value: '' }}
-        style={pickerStyles}
-        value={raca}
-      />
+      {tipoPet && tipoPet !== 'Outro' && (
+        <DropDownPicker
+          items={breeds}
+          defaultValue={raca}
+          placeholder="Raça"
+          containerStyle={styles.pickerContainer}
+          style={styles.picker}
+          onChangeItem={(item) => setRaca(item.value)}
+        />
+      )}
 
-      <RNPickerSelect
-        onValueChange={(value) => setPorte(value)}
+      <DropDownPicker
         items={[
           { label: 'Pequeno', value: 'Pequeno' },
           { label: 'Médio', value: 'Médio' },
           { label: 'Grande', value: 'Grande' },
         ]}
-        placeholder={{ label: 'Porte', value: '' }}
-        style={pickerStyles}
-        value={porte}
+        defaultValue={porte}
+        placeholder="Porte"
+        containerStyle={styles.pickerContainer}
+        style={styles.picker}
+        onChangeItem={(item) => setPorte(item.value)}
       />
 
-      <RNPickerSelect
-        onValueChange={(value) => setSexo(value)}
+      <DropDownPicker
         items={[
           { label: 'Macho', value: 'Macho' },
           { label: 'Fêmea', value: 'Fêmea' },
         ]}
-        placeholder={{ label: 'Sexo', value: '' }}
-        style={pickerStyles}
-        value={sexo}
+        defaultValue={sexo}
+        placeholder="Sexo"
+        containerStyle={styles.pickerContainer}
+        style={styles.picker}
+        onChangeItem={(item) => setSexo(item.value)}
       />
 
       <CustomTextInput placeholder="Comportamento" value={comportamento} onChangeText={setComportamento} />
-
       <CustomTextInput placeholder="Cidade" value={cidade} onChangeText={setCidade} />
       <CustomTextInput placeholder="Rua" value={rua} onChangeText={setRua} />
 
@@ -231,6 +237,16 @@ const styles = StyleSheet.create({
     fontSize: 24,
     color: '#ccc',
   },
+  pickerContainer: {
+    width: '90%',
+    marginBottom: 10,
+  },
+  picker: {
+    backgroundColor: '#f9f9f9',
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 8,
+  },
   button: {
     marginTop: 20,
     padding: 15,
@@ -246,42 +262,8 @@ const styles = StyleSheet.create({
   },
 });
 
-const pickerStyles = StyleSheet.create({
-  inputIOS: {
-    fontSize: 16,
-    paddingVertical: 12,
-    paddingHorizontal: 10,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    color: '#333',
-    backgroundColor: '#f9f9f9',
-    paddingRight: 30,
-    marginVertical: 10,
-    width: '90%',
-    height: 50, 
-  },
-  inputAndroid: {
-    fontSize: 16,
-    paddingVertical: 12,
-    paddingHorizontal: 10,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    color: '#333',
-    backgroundColor: '#f9f9f9',
-    paddingRight: 30,
-    marginVertical: 10,
-    width: '90%',
-    height: 50, 
-  },
-  placeholder: {
-    color: '#999',
-  },
-});
-
-
 export default AddPet;
+
 
 
 

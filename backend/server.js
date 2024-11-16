@@ -97,10 +97,10 @@ app.post('/usuarios', (req, res) => {
     const { email, senha, nome, cpf, tipo, foto, data_nascimento, morada, latitude, longitude, usuario_tipo } = req.body;
     console.log('Dados recebidos:', req.body);
 
-    const id = [email, senha, nome, cpf, tipo, foto, data_nascimento, morada, latitude, longitude, usuario_tipo];
+    const id = [email, senha, nome, tipo, foto, data_nascimento, morada, latitude, longitude, usuario_tipo];
     const query = `
-        INSERT INTO Usuario (Email, Senha, Nome, CPF, Tipo, Foto, Data_nascimento, Morada, Latitude, Longitude, Usuario_TIPO)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO Usuario (Email, Senha, Nome, Tipo, Foto, Data_nascimento, Morada, Latitude, Longitude, Usuario_TIPO)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     execSQLQuery(query, id, res);
