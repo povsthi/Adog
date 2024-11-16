@@ -7,6 +7,7 @@ import Label from '../components/Label';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { storeUserId } from './storage';
+import ipConf from './ipconfig';
 
 const SignUp = () => {
   const [nome, setNome] = useState('');
@@ -86,7 +87,7 @@ const SignUp = () => {
     console.log(jsonBody);
   
     try {
-      const response = await fetch('http://localhost:3001/usuarios', {
+      const response = await fetch('${ipConf()}/usuarios', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

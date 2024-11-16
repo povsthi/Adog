@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, FlatList, ActivityIndicator, Text, StyleSheet } from 'react-native';
 import PetCard from '../../components/PetCard';  
 import { getUserId } from '../storage';
+import ipConf from '../ipconfig';
 
 const FavoritosScreen = () => {
   const [favoritos, setFavoritos] = useState([]);
@@ -22,7 +23,7 @@ const FavoritosScreen = () => {
     const fetchFavoritos = async () => {
       if (idUsuario) {
         try {
-          const response = await fetch(`http://seu-endpoint/favoritas/${idUsuario}`);
+          const response = await fetch(`${ipConf()}/favoritas/${idUsuario}`);
           if (!response.ok) {
             throw new Error('Erro ao buscar favoritos');
           }

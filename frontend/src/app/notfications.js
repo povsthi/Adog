@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, FlatList, StyleSheet } from 'react-native';
 import NotCard from '../components/NotCard';
 
+
 const Notification = () => {
   const [notificacoes, setNotificacoes] = useState([
     { id: '1', nome: 'Logan', desc: 'Logan foi adicionado aos favoritos', lido: false },

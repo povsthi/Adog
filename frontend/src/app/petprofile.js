@@ -4,6 +4,7 @@ import Carousel from 'react-native-reanimated-carousel';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { getData, getUserId } from './storage';
+import ipConf from './ipconfig';
 
 const { width } = Dimensions.get('window');
 
@@ -28,7 +29,7 @@ const ProfilePet = () => {
       try {
         const petId = await getData();  
         if (petId) {
-          const response = await fetch(`http://localhost:3001/pets/${petId}`);
+          const response = await fetch(`${ipConf()}/pets/${petId}`);
           if (!response.ok) {
             throw new Error('Erro na resposta da API');
           }
@@ -54,7 +55,7 @@ const ProfilePet = () => {
         return;
       }
       console.log('ID do Pet:', pet.ID_Animal); 
-      const response = await fetch('http://localhost:3001/favoritas', { 
+      const response = await fetch('${ipConf()}/favoritas', { 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -83,7 +84,7 @@ const ProfilePet = () => {
         return;
       }
       console.log('ID do Pet:', pet.ID_Animal); 
-      const response = await fetch('http://localhost:3001/likes', {
+      const response = await fetch('${ipConf()}/likes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -4,6 +4,7 @@ import CustomTextInput from '../components/CustomTextInput';
 import RoundedButton from '../components/RoundedButton';
 import { useRouter } from 'expo-router';
 import { storeUserId } from './storage';
+import ipConf from './ipconfig';
 
 const SignIn = () => {
   const router = useRouter();
@@ -23,7 +24,7 @@ const SignIn = () => {
     const userObj = { email, senha };
     const jsonBody = JSON.stringify(userObj);
 
-    fetch('http://localhost:3001/login', {
+    fetch('${ipConf()}/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

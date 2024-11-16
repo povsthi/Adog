@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, TextInput, Text, StyleSheet, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import PetCard from '../../components/PetCard';
+import ipConf from '../ipconfig';
 
 const SearchPets = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -17,7 +18,7 @@ const SearchPets = () => {
 
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:3001/pets?nome=${searchTerm}`);
+      const response = await fetch(`${ipConf()}/pets?nome=${searchTerm}`);
       if (response.ok) {
         const data = await response.json();
         setPets(data);

@@ -3,6 +3,7 @@ import { ScrollView, View, Text, StyleSheet, ActivityIndicator, Alert, Modal, Te
 import { getUserId } from '../storage';
 import PetCard from '../../components/PetCard';
 import RoundedButton from '../../components/RoundedButton'
+import ipConf from '../ipconfig';
 
 const MyPets = () => {
   const [pets, setPets] = useState([]);
@@ -29,7 +30,7 @@ const MyPets = () => {
   const fetchPets = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:3001/pets/usuario/${idUsuario}`);
+      const response = await fetch(`${ipConf()}/pets/usuario/${idUsuario}`);
       if (response.ok) {
         const data = await response.json();
         setPets(data);
@@ -56,7 +57,7 @@ const MyPets = () => {
 
   const Atualizar = async () => {
     try {
-      const response = await fetch(`http://localhost:3001/pets/${selectedPet.id}`, {
+      const response = await fetch(`${ipConf()}/pets/${selectedPet.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -79,7 +80,7 @@ const MyPets = () => {
 
   const Deletar = async () => {
     try {
-      const response = await fetch(`http://localhost:3001/pets/${selectedPet.id}`, {
+      const response = await fetch(`${ipConf()}/pets/${selectedPet.id}`, {
         method: 'DELETE',
       });
 

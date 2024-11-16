@@ -3,14 +3,14 @@ import { View, ScrollView, StyleSheet } from 'react-native';
 import PetCard from '../../components/PetCard';
 import { useRouter } from 'expo-router';
 import { storeData } from '../storage';
-
+import ipConf from '../ipconfig';
 const Home = () => {
   const [pets, setPets] = useState([]);
   const router = useRouter();
 
   const fetchPets = async () => {
     try {
-      const response = await fetch('http://localhost:3001/pets', {
+      const response = await fetch('${ipConf()}/pets', {
         headers: {
           'Content-Type': 'application/json',
         }

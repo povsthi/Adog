@@ -3,6 +3,7 @@ import { View, Text, Image, TouchableOpacity, StyleSheet, Modal, TextInput, Butt
 import { Ionicons, FontAwesome, Entypo } from '@expo/vector-icons';
 import { getUserId } from '../storage'; 
 import RoundedButton from '../../components/RoundedButton';
+import ipConf from '../ipconfig';
 
 const SettingsScreen = ({ navigation }) => {
     const [nome, setNome] = useState('');
@@ -25,7 +26,7 @@ const SettingsScreen = ({ navigation }) => {
         const fetchItem = async () => {
             if (idUsuario) { 
                 try {
-                    let response = await fetch(`http://localhost:3001/usuarios/${idUsuario}`, {
+                    let response = await fetch(`${ipConf()}/usuarios/${idUsuario}`, {
                         headers: {
                             'Content-Type': 'application/json',
                         }
@@ -48,7 +49,7 @@ const SettingsScreen = ({ navigation }) => {
         var userObj = { nome: nome, email: email, senha: senha };
         var jsonBody = JSON.stringify(userObj);
         try {
-            let response = await fetch(`http://localhost:3000/usuarios/${idUsuario}`, {
+            let response = await fetch(`${ipConf()}/usuarios/${idUsuario}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -65,7 +66,7 @@ const SettingsScreen = ({ navigation }) => {
 
     const Deletar = async () => {
         try {
-            let response = await fetch(`http://localhost:3000/usuarios/${idUsuario}`, {
+            let response = await fetch(`${ipConf()}/usuarios/${idUsuario}`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
