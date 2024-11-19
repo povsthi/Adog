@@ -326,50 +326,99 @@ app.delete('/anuncios/:id', (req, res) => {
 });
 
 app.post('/likes', async (req, res) => {
-    console.log('Recebendo requisição POST em /likes');
     const { idUsuario, idPet } = req.body;
-    console.log('Dados recebidos:', req.body);
   
     if (!idUsuario || !idPet) {
-      console.log('Erro: idUsuario e idPet são necessários.');
       return res.status(400).json({ error: 'idUsuario e idPet são necessários.' });
     }
   
-    const query = `
+    try {
+
+      const likeQuery = `
         INSERT INTO Adota_Like (FK_Usuario_ID, FK_Pet_ID_Animal)
         VALUES (?, ?)
-    `;
-    const idParams = [idUsuario, idPet];
-    
-    try {
-        console.log('Executando a query:', query, 'com parâmetros:', idParams);
-        await resultSQLQuery(query, idParams);
-        console.log('Like registrado com sucesso.');
-        res.status(200).json({ message: 'Like registrado com sucesso.' });
+      `;
+      await resultSQLQuery(likeQuery, [idUsuario, idPet]);
+  
+      const ownerQuery = `
+        SELECT FK_Usuario_ID 
+        FROM Animal 
+        WHERE ID_Animal = ?
+      `;
+      const ownerResult = await resultSQLQuery(ownerQuery, [idPet]);
+  
+      if (ownerResult.length === 0) {
+        return res.status(404).json({ error: 'Pet não encontrado.' });
+      }
+  
+      const idDono = ownerResult[0].FK_Usuario_ID;
+  
+      const notificationQuery = `
+        INSERT INTO Notificacao (FK_Usuario_ID, Tipo, Mensagem, FK_Pet_ID_Animal, FK_Like_ID)
+        VALUES (?, ?, ?, ?, ?)
+      `;
+      const message = `Seu pet recebeu um like!`;
+      await resultSQLQuery(notificationQuery, [idDono, 'like', message, idPet, idUsuario]);
+  
+      res.status(200).json({ message: 'Like registrado e notificação enviada com sucesso.' });
     } catch (error) {
-        console.error("Erro ao registrar o like:", error);
-        res.status(500).json({ error: 'Erro ao registrar o like' });
+      console.error('Erro ao registrar o like ou enviar a notificação:', error);
+      res.status(500).json({ error: 'Erro ao registrar o like ou enviar a notificação.' });
     }
-});
+  });
+
+  
+app.post('/likes/check', async (req, res) => {
+    const { idUsuario, idPet } = req.body;
+  
+    try {
+      const query = `
+        SELECT COUNT(*) AS isLiked
+        FROM Adota_Like
+        WHERE FK_Usuario_ID = ? AND FK_Pet_ID_Animal = ?
+      `;
+      const result = await resultSQLQuery(query, [idUsuario, idPet]);
+  
+      res.status(200).json({ isLiked: result[0].isLiked > 0 });
+    } catch (error) {
+      console.error('Erro ao verificar like:', error);
+      res.status(500).json({ error: 'Erro ao verificar like' });
+    }
+  });
+  
 
 app.get('/likes', (req, res) => {
     const id = [];
     execSQLQuery("SELECT * from Adota_Like", id, res);
 });
 
-app.delete('/likes/:id', (req, res) => {
-    const { id } = req.params;
-
-    console.log('Recebendo requisição DELETE em /likes');
-    console.log('ID do like a ser removido:', id);
-
-    const query = `
-        DELETE FROM Likes
-        WHERE IDLike = ?
-    `;
-    const params = [id];
-    execSQLQuery(query, params, res);
-});
+app.delete('/unlike', async (req, res) => {
+    const { idUsuario, idPet } = req.body;
+  
+    if (!idUsuario || !idPet) {
+      return res.status(400).json({ error: 'idUsuario e idPet são necessários.' });
+    }
+  
+    try {
+      const query = `
+        DELETE FROM Adota_Like
+        WHERE FK_Usuario_ID = ? AND FK_Pet_ID_Animal = ?
+      `;
+      const params = [idUsuario, idPet];
+  
+      const result = await resultSQLQuery(query, params);
+  
+      if (result.affectedRows > 0) {
+        res.status(200).json({ message: 'Like removido com sucesso.' });
+      } else {
+        res.status(404).json({ error: 'Registro não encontrado.' });
+      }
+    } catch (error) {
+      console.error('Erro ao remover o like:', error);
+      res.status(500).json({ error: 'Erro ao remover o like.' });
+    }
+  });
+  
 
 const checkForMatch = (idUsuario, idPet, res) => {
     console.log(`Verificando se há match entre o usuário ${idUsuario} e o pet ${idPet}`);
@@ -475,24 +524,19 @@ app.get('/notificacoes/:usuarioId', async (req, res) => {
     }
 });
 
-app.post('/notificacoes', async (req, res) => {
+app.post('/notificacoes', (req, res) => {
+    console.log('Recebendo requisição POST em /notificacoes');
     const { FK_Usuario_ID, Tipo, Mensagem, FK_Pet_ID_Animal, FK_Like_ID } = req.body;
+    console.log('Dados recebidos:', req.body);
 
-    try {
-        const result = await pool.query(
-            `INSERT INTO Notificacao (FK_Usuario_ID, Tipo, Mensagem, FK_Pet_ID_Animal, FK_Like_ID)
-             VALUES ($1, $2, $3, $4, $5)
-             RETURNING *`,
-            [FK_Usuario_ID, Tipo, Mensagem, FK_Pet_ID_Animal, FK_Like_ID]
-        );
-        res.status(201).json(result.rows[0]);
-    } catch (error) {
-        console.error('Erro ao criar notificação:', error);
-        res.status(500).json({ error: 'Erro ao criar notificação' });
-    }
+    const params = [FK_Usuario_ID, Tipo, Mensagem, FK_Pet_ID_Animal, FK_Like_ID];
+    const query = `
+        INSERT INTO Notificacao (FK_Usuario_ID, Tipo, Mensagem, FK_Pet_ID_Animal, FK_Like_ID)
+        VALUES (?, ?, ?, ?, ?)
+    `;
+
+    execSQLQuery(query, params, res);
 });
-
-
 
 app.listen(port, () => {
     console.log(`App escutando na porta ${port}`);

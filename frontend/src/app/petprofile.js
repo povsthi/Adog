@@ -37,6 +37,7 @@ const ProfilePet = () => {
           setPet(petData[0]);
           console.log('Dados do Pet:', petData);
           checkIfFavorited(petData[0].ID_Animal);
+          checkIfLiked(petData[0].ID_Animal);
         } else {
           Alert.alert('Erro', 'Não foi possível carregar os dados do pet.');
         }
@@ -69,6 +70,29 @@ const ProfilePet = () => {
       console.error('Erro ao verificar se o pet é favorito:', error);
     }
   };
+
+  const checkIfLiked = async (petId) => {
+    try {
+      const response = await fetch(`${ipConf()}/likes/check`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          idUsuario: idUsuario,
+          idPet: petId,
+        }),
+      });
+  
+      if (response.ok) {
+        const result = await response.json();
+        setIsLiked(result.isLiked); 
+      } else {
+        console.log('Erro ao verificar se o pet foi curtido.');
+      }
+    } catch (error) {
+      console.error('Erro ao verificar se o pet foi curtido:', error);
+    }
+  };
+  
 
   const handleFavorite = async () => {
     console.log('Botão de Favoritar pressionado');
@@ -137,32 +161,33 @@ const ProfilePet = () => {
         Alert.alert('Erro', 'Dados insuficientes para curtir o pet.');
         return;
       }
-      console.log('ID do Pet:', pet.ID_Animal); 
-      const response = await fetch(`${ipConf()}/likes`, {
-        method: 'POST',
+  
+      const endpoint = isLiked ? '/unlike' : '/likes'; 
+      const method = isLiked ? 'DELETE' : 'POST'; 
+  
+      const response = await fetch(`${ipConf()}${endpoint}`, {
+        method: method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          idUsuario: idUsuario,  
+          idUsuario: idUsuario,
           idPet: pet.ID_Animal,
         }),
       });
-
-      console.log('Tentando enviar o like...');
+  
       if (response.ok) {
-        const responseData = await response.json();
-        console.log('Like registrado:', responseData);
-        setIsLiked(true); 
-        Alert.alert('Like', responseData.message);
+        setIsLiked(!isLiked); 
+        const message = isLiked ? 'Like removido com sucesso!' : 'Like registrado com sucesso!';
+        Alert.alert('Like', message);
       } else {
-        const errorData = await response.json(); 
-        console.error('Erro ao curtir o pet:', errorData);
-        throw new Error('Falha ao curtir');
-      }      
+        const errorData = await response.json();
+        console.error('Erro ao curtir/descurtir o pet:', errorData);
+        throw new Error('Falha ao curtir/descurtir');
+      }
     } catch (error) {
-      Alert.alert('Erro', 'Não foi possível curtir o pet.');
+      Alert.alert('Erro', 'Não foi possível curtir/descurtir o pet.');
       console.error(error);
     }
-  };
+  };  
 
   const handleBack = () => {
     navigation.goBack();
