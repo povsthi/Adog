@@ -8,6 +8,7 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { storeUserId } from './storage';
 import ipConf from './ipconfig';
+import uploadImage from './uploadImage';
 
 const SignUp = () => {
   const [nome, setNome] = useState('');
@@ -16,6 +17,8 @@ const SignUp = () => {
   const [senha, setSenha] = useState('');
   const [confirmarSenha, setConfirmarSenha] = useState('');
   const [moradia, setMoradia] = useState('');
+  const [foto, setFoto] = useState(null); 
+  const [fotoUrl, setFotoUrl] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [location, setLocation] = useState({ latitude: null, longitude: null });
   const router = useRouter();
@@ -71,8 +74,24 @@ const SignUp = () => {
     }
   };
 
+  const selecionarFoto = async () => {
+    const result = await pickImage(); 
+    if (result) {
+      setFoto(result.uri); 
+      setLoadingImage(true);
+      const uploadedUrl = await onFileUpload(result.base64); 
+      setLoadingImage(false);
+      if (uploadedUrl) {
+        setFotoUrl(uploadedUrl); 
+        Alert.alert('Sucesso!', 'Imagem carregada com sucesso.');
+      } else {
+        Alert.alert('Erro!', 'Não foi possível carregar a imagem.');
+      }
+    }
+  };
+
   const Cadastrar = async () => { 
-    if (!nome || !email || !senha || !confirmarSenha || !moradia) {
+    if (!nome || !email || !senha || !confirmarSenha || !moradia || fotoUrl) {
       Alert.alert('Erro', 'Todos os campos são obrigatórios!');
       return;
     }
@@ -82,7 +101,7 @@ const SignUp = () => {
       return;
     }
   
-    const userObj = { nome, email, senha, moradia, latitude: location.latitude, longitude: location.longitude };
+    const userObj = { nome, email, senha, moradia, latitude: location.latitude, longitude: location.longitude, foto: fotoUrl };
     const jsonBody = JSON.stringify(userObj);
     console.log(jsonBody);
   
@@ -121,6 +140,14 @@ const SignUp = () => {
         <ScrollView showsVerticalScrollIndicator={false}>
           <View style={styles.formContainer}>
           <Text style={styles.title}>Adicione as suas informações</Text>
+
+          <TouchableOpacity style={styles.fotoContainer} onPress={selecionarFoto}>
+          {foto ? (
+            <Image source={{ uri: foto.uri }} style={styles.foto} />
+          ) : (
+            <Text style={styles.fotoPlaceholder}>+</Text>
+          )}
+        </TouchableOpacity>
 
           <Label text="Nome" />
           <CustomTextInput placeholder="Digite seu nome" value={nome} onChangeText={setNome} />
@@ -171,6 +198,25 @@ const SignUp = () => {
 };
 
 const styles = StyleSheet.create({
+  fotoContainer: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    borderWidth: 2,
+    borderColor: '#ccc',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  foto: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 50,
+  },
+  fotoPlaceholder: {
+    fontSize: 24,
+    color: '#ccc',
+  },
   container: {
     flex: 1,
     backgroundColor: '#fff',

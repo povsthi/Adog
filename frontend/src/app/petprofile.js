@@ -15,6 +15,7 @@ const ProfilePet = () => {
   const [isLiked, setIsLiked] = useState(false);
   const [isFavorited, setIsFavorited] = useState(false);
 
+  // Obter o ID do usuário
   useEffect(() => {
     const fetchUserId = async () => {
       const id = await getUserId();
@@ -24,10 +25,11 @@ const ProfilePet = () => {
     fetchUserId();
   }, []);
 
+  // Carregar os dados do pet
   useEffect(() => {
     const fetchPetData = async () => {
       try {
-        const petId = await getData();  
+        const petId = await getData();
         if (petId) {
           const response = await fetch(`${ipConf()}/pets/${petId}`);
           if (!response.ok) {
@@ -36,8 +38,6 @@ const ProfilePet = () => {
           const petData = await response.json();
           setPet(petData[0]);
           console.log('Dados do Pet:', petData);
-          checkIfFavorited(petData[0].ID_Animal);
-          checkIfLiked(petData[0].ID_Animal);
         } else {
           Alert.alert('Erro', 'Não foi possível carregar os dados do pet.');
         }
@@ -48,6 +48,20 @@ const ProfilePet = () => {
     };
     fetchPetData();
   }, []);
+
+  // Verificar se o pet foi favoritado e curtido (apenas quando idUsuario e pet estão disponíveis)
+  useEffect(() => {
+    if (idUsuario && pet?.ID_Animal) {
+      console.log('Chamando checkIfFavorited e checkIfLiked com:', {
+        idUsuario,
+        petId: pet.ID_Animal,
+      });
+      checkIfFavorited(pet.ID_Animal);
+      checkIfLiked(pet.ID_Animal);
+    } else {
+      console.log('Aguardando idUsuario e pet:', { idUsuario, pet });
+    }
+  }, [idUsuario, pet]);
 
   const checkIfFavorited = async (petId) => {
     try {
@@ -62,7 +76,7 @@ const ProfilePet = () => {
 
       if (response.ok) {
         const result = await response.json();
-        setIsFavorited(result.isFavorited);  
+        setIsFavorited(result.isFavorited);
       } else {
         console.log('Erro ao verificar se o pet é favorito.');
       }
@@ -81,10 +95,10 @@ const ProfilePet = () => {
           idPet: petId,
         }),
       });
-  
+
       if (response.ok) {
         const result = await response.json();
-        setIsLiked(result.isLiked); 
+        setIsLiked(result.isLiked);
       } else {
         console.log('Erro ao verificar se o pet foi curtido.');
       }
@@ -92,12 +106,11 @@ const ProfilePet = () => {
       console.error('Erro ao verificar se o pet foi curtido:', error);
     }
   };
-  
 
   const handleFavorite = async () => {
     console.log('Botão de Favoritar pressionado');
     try {
-      if (!idUsuario || !pet?.ID_Animal) {  
+      if (!idUsuario || !pet?.ID_Animal) {
         Alert.alert('Erro', 'Dados insuficientes para favoritar o pet.');
         return;
       }
@@ -144,7 +157,7 @@ const ProfilePet = () => {
       });
 
       if (response.ok) {
-        setIsFavorited(false); 
+        setIsFavorited(false);
         Alert.alert('Desfavoritado', `${pet.Nome} foi removido dos favoritos!`);
       } else {
         const error = await response.json();
@@ -157,14 +170,14 @@ const ProfilePet = () => {
 
   const handleLike = async () => {
     try {
-      if (!idUsuario || !pet?.ID_Animal) {  
+      if (!idUsuario || !pet?.ID_Animal) {
         Alert.alert('Erro', 'Dados insuficientes para curtir o pet.');
         return;
       }
-  
-      const endpoint = isLiked ? '/unlike' : '/likes'; 
-      const method = isLiked ? 'DELETE' : 'POST'; 
-  
+
+      const endpoint = isLiked ? '/unlike' : '/likes';
+      const method = isLiked ? 'DELETE' : 'POST';
+
       const response = await fetch(`${ipConf()}${endpoint}`, {
         method: method,
         headers: { 'Content-Type': 'application/json' },
@@ -173,9 +186,9 @@ const ProfilePet = () => {
           idPet: pet.ID_Animal,
         }),
       });
-  
+
       if (response.ok) {
-        setIsLiked(!isLiked); 
+        setIsLiked(!isLiked);
         const message = isLiked ? 'Like removido com sucesso!' : 'Like registrado com sucesso!';
         Alert.alert('Like', message);
       } else {
@@ -187,7 +200,7 @@ const ProfilePet = () => {
       Alert.alert('Erro', 'Não foi possível curtir/descurtir o pet.');
       console.error(error);
     }
-  };  
+  };
 
   const handleBack = () => {
     navigation.goBack();
@@ -203,7 +216,7 @@ const ProfilePet = () => {
           width={width * 0.8}
           height={200}
           autoPlay={true}
-          data={pet.imagens} 
+          data={pet.imagens}
           renderItem={({ item }) => (
             <Image source={{ uri: item }} style={styles.petImage} />
           )}
@@ -212,18 +225,18 @@ const ProfilePet = () => {
       </View>
       <View style={styles.infoContainer}>
         <Text style={styles.petName}>{`${pet.Nome}, ${pet.Idade}`}</Text>
-        <Text style={styles.petDetail}>• Porte {pet.Porte}</Text> 
-        <Text style={styles.petDetail}>• {pet.Raca}</Text> 
-        <Text style={styles.petDetail}>• {pet.Sexo ? 'Masculino' : 'Feminino'}</Text> 
-        <Text style={styles.petDetail}>• Residente de {pet.Cidade}</Text> 
-        <Text style={styles.petDetail}>• {pet.Comportamento}</Text> 
+        <Text style={styles.petDetail}>• Porte {pet.Porte}</Text>
+        <Text style={styles.petDetail}>• {pet.Raca}</Text>
+        <Text style={styles.petDetail}>• {pet.Sexo ? 'Masculino' : 'Feminino'}</Text>
+        <Text style={styles.petDetail}>• Residente de {pet.Cidade}</Text>
+        <Text style={styles.petDetail}>• {pet.Comportamento}</Text>
       </View>
       <View style={styles.navigationContainer}>
         <TouchableOpacity onPress={handleLike}>
-          <Ionicons name={isLiked ? "heart" : "heart-outline"} size={32} color="#212A75" />
+          <Ionicons name={isLiked ? 'heart' : 'heart-outline'} size={32} color="#212A75" />
         </TouchableOpacity>
         <TouchableOpacity onPress={isFavorited ? handleDesfavoritar : handleFavorite}>
-          <Ionicons name={isFavorited ? "star" : "star-outline"} size={32} color="#212A75" />
+          <Ionicons name={isFavorited ? 'star' : 'star-outline'} size={32} color="#212A75" />
         </TouchableOpacity>
         <TouchableOpacity onPress={handleBack}>
           <Feather name="x" size={32} color="#212A75" />
@@ -248,17 +261,11 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   infoContainer: {
-    padding: 15,
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    margin: 10,
-    borderWidth: 1,
-    borderColor: '#000080',
+    padding: 16,
   },
   petName: {
+    fontSize: 24,
     fontWeight: 'bold',
-    fontSize: 20,
-    marginBottom: 5,
   },
   petDetail: {
     fontSize: 16,
@@ -267,11 +274,12 @@ const styles = StyleSheet.create({
   navigationContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    padding: 10,
+    marginTop: 20,
   },
 });
 
 export default ProfilePet;
+
 
 
 

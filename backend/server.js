@@ -64,7 +64,9 @@ async function resultSQLQuery(sqlQry, id) {
 
 app.get('/', (req, res) => {
     res.send('Hello World!');
-});
+})
+
+/*********************************endpoints para cadastro, visualização e edição de usuário********************************* */
 
 app.get('/usuarios', middlewareValidarJWT, (req, res) => {
     const id = [];
@@ -76,25 +78,9 @@ app.get('/usuarios/:id', (req, res) => {
     execSQLQuery(`SELECT * FROM Usuario WHERE ID = ?`, [id], res); 
 });
 
-
-app.get('/pets', (req, res) => {
-    const id = [];
-    execSQLQuery("SELECT * from Pet", id, res);
-});
-
-app.get('/pets/:id', (req, res) => { 
-    const id = req.params.id; 
-    execSQLQuery(`SELECT * FROM Pet WHERE ID_Animal = ?`, [id], res); 
-});
-
-app.get('/pets/usuario/:idUsuario', (req, res) => { 
-    const idUsuario = req.params.idUsuario; 
-    execSQLQuery(`SELECT * FROM Pet WHERE FK_Usuario_ID = ?`, [idUsuario], res); 
-  });  
-
 app.post('/usuarios', (req, res) => {
     console.log('Recebendo requisição POST em /usuarios');
-    const { email, senha, nome, cpf, tipo, foto, data_nascimento, morada, latitude, longitude, usuario_tipo } = req.body;
+    const { email, senha, nome, tipo, foto, data_nascimento, morada, latitude, longitude, usuario_tipo } = req.body;
     console.log('Dados recebidos:', req.body);
 
     const id = [email, senha, nome, tipo, foto, data_nascimento, morada, latitude, longitude, usuario_tipo];
@@ -150,39 +136,19 @@ app.post('/login', async (req, res) => {
     console.log("brilhou");
 });
 
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
+/*********************************endpoints para cadastro, visualização e edição de pets********************************* */
 
-async function uploadToImgur(imageBuffer) {
-    const formData = new FormData();
-    formData.append('image', imageBuffer.toString('base64')); 
-  
-    try {
-      const response = await axios.post('https://api.imgur.com/3/image', formData, {
-        headers: {
-          Authorization: `Client-ID 1528cabed767a7e`,
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      return response.data.data.link; 
-    } catch (error) {
-      console.error("Erro ao fazer upload para o Imgur:", error);
-      throw new Error("Erro ao fazer upload da imagem.");
-    }
-  }
-  
-  app.post('/pets', upload.single('foto'), async (req, res) => {
+app.post('/pets', async (req, res) => {
     console.log('Recebendo requisição POST em /pets');
     
     const { tipo, raca, nome, sexo, idade, porte, comportamento, cidade, rua, fk_usuario_id } = req.body;
-    const fotoBuffer = req.file ? req.file.buffer : null; 
-  
+    
     const petData = [tipo, raca, nome, sexo, idade, porte, comportamento, cidade, rua, fk_usuario_id];
   
     const connection = mysql.createConnection(db);
     connection.connect();
   
-    connection.query(petQuery, petData, async (error, result) => {
+    connection.query(petQuery, petData, (error, result) => {
       if (error) {
         console.error("Erro ao cadastrar o pet:", error);
         res.status(500).json({ error: 'Erro ao cadastrar o pet' });
@@ -190,49 +156,39 @@ async function uploadToImgur(imageBuffer) {
         return;
       }
   
-      const petId = result.insertId;
-      console.log('ID do pet cadastrado:', petId);
-  
-      if (fotoBuffer) {
-        try {
-          const imgurUrl = await uploadToImgur(fotoBuffer);
-  
-          const fotoQuery = `
-            INSERT INTO Foto (URL, FK_Pet_ID_Animal)
-            VALUES (?, ?)
-          `;
-          connection.query(fotoQuery, [imgurUrl, petId], (fotoError) => {
-            connection.end();
-            if (fotoError) {
-              console.error("Erro ao salvar a URL da foto:", fotoError);
-              res.status(500).json({ error: 'Erro ao salvar a URL da foto do pet' });
-            } else {
-              res.status(200).send('Pet cadastrado com sucesso, com foto.');
-            }
-          });
-        } catch (uploadError) {
-          console.error(uploadError.message);
-          res.status(500).json({ error: 'Erro ao fazer upload da imagem para o Imgur.' });
-        }
-      } else {
-        connection.end();
-        res.status(200).send('Pet cadastrado com sucesso, sem foto.');
-      }
+      console.log('ID do pet cadastrado:', result.insertId);
+      connection.end();
+      res.status(200).send('Pet cadastrado com sucesso.');
     });
   });
 
-app.put('/pets/:id', upload.single('foto'), (req, res) => {
+  app.get('/pets', (req, res) => {
+    const id = [];
+    execSQLQuery("SELECT * from Pet", id, res);
+});
+
+app.get('/pets/:id', (req, res) => { 
+    const id = req.params.id; 
+    execSQLQuery(`SELECT * FROM Pet WHERE ID_Animal = ?`, [id], res); 
+});
+
+app.get('/pets/usuario/:idUsuario', (req, res) => { 
+    const idUsuario = req.params.idUsuario; 
+    execSQLQuery(`SELECT * FROM Pet WHERE FK_Usuario_ID = ?`, [idUsuario], res); 
+  });  
+
+  
+  app.put('/pets/:id', (req, res) => {
     console.log('Recebendo requisição PUT em /pets/:id');
   
     const petId = req.params.id;
     const { tipo, raca, nome, sexo, idade, porte, comportamento, cidade, rua, fk_usuario_id, fk_raca_id } = req.body;
-    const foto = req.file ? req.file.filename : null;
   
     const petData = [tipo, raca, nome, sexo, idade, porte, comportamento, cidade, rua, fk_usuario_id, petId];
   
     const petQuery = `
       UPDATE Pet
-      SET Tipo = ?, Raca = ?, Nome = ?, Sexo = ?, Idade = ?, Porte = ?, Comportamento = ?, Cidade = ?, Rua = ?, FK_Usuario_ID = ?, 
+      SET Tipo = ?, Raca = ?, Nome = ?, Sexo = ?, Idade = ?, Porte = ?, Comportamento = ?, Cidade = ?, Rua = ?, FK_Usuario_ID = ?
       WHERE ID = ?
     `;
   
@@ -240,36 +196,17 @@ app.put('/pets/:id', upload.single('foto'), (req, res) => {
     connection.connect();
   
     connection.query(petQuery, petData, (error, result) => {
+      connection.end();
+  
       if (error) {
         console.error("Erro ao atualizar o pet:", error);
         res.status(500).json({ error: 'Erro ao atualizar o pet' });
-        connection.end();
         return;
       }
   
-      if (foto) {
-        const fotoQuery = `
-          UPDATE Foto
-          SET URL = ?
-          WHERE FK_Pet_ID_Animal = ?
-        `;
-  
-        connection.query(fotoQuery, [foto, petId], (fotoError) => {
-          connection.end();
-          if (fotoError) {
-            console.error("Erro ao atualizar a foto:", fotoError);
-            res.status(500).json({ error: 'Erro ao atualizar a foto do pet' });
-          } else {
-            res.status(200).send('Pet atualizado com sucesso, com nova foto.');
-          }
-        });
-      } else {
-        connection.end();
-        res.status(200).send('Pet atualizado com sucesso, sem alteração na foto.');
-      }
+      res.status(200).send('Pet atualizado com sucesso.');
     });
   });
-  
 
 app.delete('/pets/:id', (req, res) => {
     const idPet = req.params.id; 
@@ -277,7 +214,6 @@ app.delete('/pets/:id', (req, res) => {
 
     execSQLQuery(query, [idPet], res);
 });
-
 
 app.post('/anuncios', (req, res) => {
     console.log('Recebendo requisição POST em /anuncios');
@@ -292,7 +228,6 @@ app.post('/anuncios', (req, res) => {
 
     execSQLQuery(query, id, res);
 });
-
 
 app.put('/anuncios/:id', (req, res) => {
     const { tipo, favorito, nomeParceiro, urlFoto, telefone, ruaParceiro, numeroParceiro } = req.body;
@@ -311,7 +246,6 @@ app.put('/anuncios/:id', (req, res) => {
     execSQLQuery(query, idParams, res);
 });
 
-
 app.delete('/anuncios/:id', (req, res) => {
     const { id } = req.params;
     console.log(`Deletando anúncio com ID: ${id}`);
@@ -325,67 +259,80 @@ app.delete('/anuncios/:id', (req, res) => {
     execSQLQuery(query, idParams, res);
 });
 
-app.post('/likes', async (req, res) => {
+/********************************************endpoints para likes e matchs ******************************************************* */
+
+app.post('/likes', (req, res) => {
     const { idUsuario, idPet } = req.body;
   
     if (!idUsuario || !idPet) {
-      return res.status(400).json({ error: 'idUsuario e idPet são necessários.' });
+        return res.status(400).json({ error: 'idUsuario e idPet são necessários.' });
     }
   
-    try {
 
-      const likeQuery = `
+    const likeQuery = `
         INSERT INTO Adota_Like (FK_Usuario_ID, FK_Pet_ID_Animal)
         VALUES (?, ?)
-      `;
-      await resultSQLQuery(likeQuery, [idUsuario, idPet]);
-  
-      const ownerQuery = `
-        SELECT FK_Usuario_ID 
-        FROM Animal 
-        WHERE ID_Animal = ?
-      `;
-      const ownerResult = await resultSQLQuery(ownerQuery, [idPet]);
-  
-      if (ownerResult.length === 0) {
-        return res.status(404).json({ error: 'Pet não encontrado.' });
-      }
-  
-      const idDono = ownerResult[0].FK_Usuario_ID;
-  
-      const notificationQuery = `
-        INSERT INTO Notificacao (FK_Usuario_ID, Tipo, Mensagem, FK_Pet_ID_Animal, FK_Like_ID)
-        VALUES (?, ?, ?, ?, ?)
-      `;
-      const message = `Seu pet recebeu um like!`;
-      await resultSQLQuery(notificationQuery, [idDono, 'like', message, idPet, idUsuario]);
-  
-      res.status(200).json({ message: 'Like registrado e notificação enviada com sucesso.' });
-    } catch (error) {
-      console.error('Erro ao registrar o like ou enviar a notificação:', error);
-      res.status(500).json({ error: 'Erro ao registrar o like ou enviar a notificação.' });
-    }
-  });
+    `;
+    execSQLQuery(likeQuery, [idUsuario, idPet], (likeError, likeResults) => {
+        if (likeError) {
+            console.error('Erro ao registrar o like:', likeError);
+            return res.status(500).json({ error: 'Erro ao registrar o like.' });
+        }
 
+        const ownerQuery = `
+            SELECT FK_Usuario_ID 
+            FROM Animal 
+            WHERE ID_Animal = ?
+        `;
+        execSQLQuery(ownerQuery, [idPet], (ownerError, ownerResult) => {
+            if (ownerError) {
+                console.error('Erro ao buscar o dono do pet:', ownerError);
+                return res.status(500).json({ error: 'Erro ao buscar o dono do pet.' });
+            }
+
+            if (ownerResult.length === 0) {
+                return res.status(404).json({ error: 'Pet não encontrado.' });
+            }
+
+            const idDono = ownerResult[0].FK_Usuario_ID;
+
+            const notificationQuery = `
+                INSERT INTO Notificacao (FK_Usuario_ID, Tipo, Mensagem, FK_Pet_ID_Animal, FK_Like_ID)
+                VALUES (?, ?, ?, ?, ?)
+            `;
+            const message = 'Seu pet recebeu um like!';
+            execSQLQuery(notificationQuery, [idDono, 'like', message, idPet, idUsuario], (notificationError, notificationResult) => {
+                if (notificationError) {
+                    console.error('Erro ao enviar a notificação:', notificationError);
+                    return res.status(500).json({ error: 'Erro ao enviar a notificação.' });
+                }
+
+                res.status(200).json({ message: 'Like registrado e notificação enviada com sucesso.' });
+            });
+        });
+    });
+});
   
-app.post('/likes/check', async (req, res) => {
+app.post('/likes/check', (req, res) => {
     const { idUsuario, idPet } = req.body;
-  
-    try {
-      const query = `
+
+    const query = `
         SELECT COUNT(*) AS isLiked
         FROM Adota_Like
         WHERE FK_Usuario_ID = ? AND FK_Pet_ID_Animal = ?
-      `;
-      const result = await resultSQLQuery(query, [idUsuario, idPet]);
-  
-      res.status(200).json({ isLiked: result[0].isLiked > 0 });
-    } catch (error) {
-      console.error('Erro ao verificar like:', error);
-      res.status(500).json({ error: 'Erro ao verificar like' });
-    }
-  });
-  
+    `;
+    
+    execSQLQuery(query, [idUsuario, idPet], {
+        json: (result) => {
+            
+            res.status(200).json({ isLiked: result[0].isLiked > 0 });
+        },
+        status: (statusCode) => ({
+            json: (error) => res.status(statusCode).json(error),
+        }),
+    });
+});
+
 
 app.get('/likes', (req, res) => {
     const id = [];
@@ -460,6 +407,8 @@ app.get('/matchs/:id', (req, res) => {
     execSQLQuery(query, [id], res);
 });
 
+/******************************* endpoints para favoritar o pet ******************************************************* */
+
 app.post('/favoritas', (req, res) => {
     const { idUsuario, idPet } = req.body;
 
@@ -475,14 +424,40 @@ app.post('/favoritas', (req, res) => {
         if (checkResult.length > 0) {
             return res.status(400).json({ message: 'Este pet já foi favoritado por este usuário.' });
         }
+
         const insertQuery = `
             INSERT INTO Favorita (FK_Pet_ID_Animal, FK_Usuario_ID)
             VALUES (?, ?)
         `;
         const insertParams = [idPet, idUsuario];
+
         execSQLQuery(insertQuery, insertParams, (insertResult) => {
             res.status(200).json({ message: 'Pet favoritado com sucesso!' });
         });
+    });
+});
+
+app.post('/favoritas/check', (req, res) => {
+    const { idUsuario, idPet } = req.body;
+
+    console.log('Recebendo requisição POST em /favoritas/check');
+    console.log('Dados recebidos:', req.body);
+
+    const checkQuery = `
+        SELECT COUNT(*) AS isFavorited
+        FROM Favorita
+        WHERE FK_Usuario_ID = ? AND FK_Pet_ID_Animal = ?
+    `;
+    const checkParams = [idUsuario, idPet];
+
+    execSQLQuery(checkQuery, checkParams, {
+        json: (results) => {
+            const isFavorited = results[0]?.isFavorited > 0;
+            res.status(200).json({ isFavorited });
+        },
+        status: (statusCode) => ({
+            json: (error) => res.status(statusCode).json(error),
+        }),
     });
 });
 
@@ -509,6 +484,8 @@ app.get('/favoritas/:idUsuario', (req, res) => {
     execSQLQuery(`SELECT * FROM Favorita WHERE FK_Usuario_ID = ?`, [idUsuario], res); 
 });
 
+/************************************************endpoints para notificações *********************************************** */
+
 app.get('/notificacoes/:usuarioId', async (req, res) => {
     const { usuarioId } = req.params;
 
@@ -524,19 +501,45 @@ app.get('/notificacoes/:usuarioId', async (req, res) => {
     }
 });
 
-app.post('/notificacoes', (req, res) => {
+app.post('/notificacoes', async (req, res) => {
     console.log('Recebendo requisição POST em /notificacoes');
-    const { FK_Usuario_ID, Tipo, Mensagem, FK_Pet_ID_Animal, FK_Like_ID } = req.body;
-    console.log('Dados recebidos:', req.body);
+    const { FK_Usuario_ID, Tipo, FK_Pet_ID_Animal, FK_Like_ID } = req.body;
 
-    const params = [FK_Usuario_ID, Tipo, Mensagem, FK_Pet_ID_Animal, FK_Like_ID];
-    const query = `
-        INSERT INTO Notificacao (FK_Usuario_ID, Tipo, Mensagem, FK_Pet_ID_Animal, FK_Like_ID)
-        VALUES (?, ?, ?, ?, ?)
-    `;
+    if (Tipo !== 'like') {
+        return res.status(400).json({ error: 'Este endpoint suporta apenas notificações do tipo "like".' });
+    }
 
-    execSQLQuery(query, params, res);
+    try {
+        const petQuery = 'SELECT Nome FROM Pet WHERE ID_Animal = ?';
+        const userQuery = 'SELECT Nome FROM Usuario WHERE ID_Usuario = ?';
+
+        const [petResult] = await resultSQLQuery(petQuery, [FK_Pet_ID_Animal]);
+        const [userResult] = await resultSQLQuery(userQuery, [FK_Usuario_ID]);
+
+        if (!petResult || !userResult) {
+            return res.status(404).json({ error: 'Pet ou Usuário não encontrados.' });
+        }
+
+        const nomePet = petResult.Nome;
+        const nomeUsuario = userResult.Nome;
+
+        const Mensagem = `${nomePet} foi curtido por ${nomeUsuario}`;
+
+        const insertQuery = `
+            INSERT INTO Notificacao (FK_Usuario_ID, Tipo, Mensagem, FK_Pet_ID_Animal, FK_Like_ID)
+            VALUES (?, ?, ?, ?, ?)
+        `;
+        const params = [FK_Usuario_ID, Tipo, Mensagem, FK_Pet_ID_Animal, FK_Like_ID];
+
+        await resultSQLQuery(insertQuery, params);
+        console.log('Notificação criada com sucesso.');
+        res.status(201).json({ message: 'Notificação criada com sucesso.', Mensagem });
+    } catch (error) {
+        console.error('Erro ao criar notificação:', error);
+        res.status(500).json({ error: 'Erro ao criar notificação' });
+    }
 });
+
 
 app.listen(port, () => {
     console.log(`App escutando na porta ${port}`);

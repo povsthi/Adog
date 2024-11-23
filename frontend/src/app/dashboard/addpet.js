@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { ScrollView, View, TouchableOpacity, Text, StyleSheet, Image, Alert, ActivityIndicator } from 'react-native';
 import CustomTextInput from '../../components/CustomTextInput';
-import { launchImageLibraryAsync, MediaTypeOptions } from 'expo-image-picker';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { getUserId } from '../storage';
 import ipConf from '../ipconfig';
+import { uploadImage } from '../uploadImage';
+import * as ImagePicker from 'expo-image-picker';
 
 const AddPet = () => {
   const [nomePet, setNomePet] = useState('');
@@ -21,6 +22,12 @@ const AddPet = () => {
   const [foto, setFoto] = useState(null);
   const [loading, setLoading] = useState(false);
   const [idUsuario, setIdUsuario] = useState(null);
+
+  // Estados para gerenciar abertura dos menus DropDownPicker
+  const [openTipo, setOpenTipo] = useState(false);
+  const [openRaca, setOpenRaca] = useState(false);
+  const [openPorte, setOpenPorte] = useState(false);
+  const [openSexo, setOpenSexo] = useState(false);
 
   useEffect(() => {
     const fetchUserId = async () => {
@@ -59,8 +66,8 @@ const AddPet = () => {
   }, [tipoPet]);
 
   const selecionarFoto = async () => {
-    const result = await launchImageLibraryAsync({
-      mediaTypes: MediaTypeOptions.Images,
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       quality: 1,
     });
@@ -96,11 +103,14 @@ const AddPet = () => {
     petData.append('fk_usuario_id', idUsuario);
 
     if (foto) {
-      petData.append('foto', {
-        uri: foto.uri,
-        type: foto.type,
-        name: foto.fileName,
-      });
+      try {
+        const imageUrl = await uploadImage(foto.uri);
+        petData.append('foto', imageUrl);
+      } catch (error) {
+        console.error('Erro ao fazer upload da foto:', error);
+        Alert.alert('Erro', 'Erro ao carregar a imagem.');
+        return;
+      }
     }
 
     try {
@@ -152,52 +162,49 @@ const AddPet = () => {
       <CustomTextInput placeholder="Idade" value={idade} onChangeText={setIdade} />
 
       <DropDownPicker
-        items={[
-          { label: 'Cachorro', value: 'Cachorro' },
-          { label: 'Gato', value: 'Gato' },
-          { label: 'Outro', value: 'Outro' },
-        ]}
-        defaultValue={tipoPet}
+        open={openTipo}
+        setOpen={setOpenTipo}
+        items={[{ label: 'Cachorro', value: 'Cachorro' }, { label: 'Gato', value: 'Gato' }, { label: 'Outro', value: 'Outro' }]}
+        value={tipoPet}
+        setValue={setTipoPet}
         placeholder="Tipo de pet"
         containerStyle={styles.pickerContainer}
         style={styles.picker}
-        onChangeItem={(item) => setTipoPet(item.value)}
       />
 
       {tipoPet && tipoPet !== 'Outro' && (
         <DropDownPicker
+          open={openRaca}
+          setOpen={setOpenRaca}
           items={breeds}
-          defaultValue={raca}
+          value={raca}
+          setValue={setRaca}
           placeholder="Raça"
           containerStyle={styles.pickerContainer}
           style={styles.picker}
-          onChangeItem={(item) => setRaca(item.value)}
         />
       )}
 
       <DropDownPicker
-        items={[
-          { label: 'Pequeno', value: 'Pequeno' },
-          { label: 'Médio', value: 'Médio' },
-          { label: 'Grande', value: 'Grande' },
-        ]}
-        defaultValue={porte}
+        open={openPorte}
+        setOpen={setOpenPorte}
+        items={[{ label: 'Pequeno', value: 'Pequeno' }, { label: 'Médio', value: 'Médio' }, { label: 'Grande', value: 'Grande' }]}
+        value={porte}
+        setValue={setPorte}
         placeholder="Porte"
         containerStyle={styles.pickerContainer}
         style={styles.picker}
-        onChangeItem={(item) => setPorte(item.value)}
       />
 
       <DropDownPicker
-        items={[
-          { label: 'Macho', value: 'Macho' },
-          { label: 'Fêmea', value: 'Fêmea' },
-        ]}
-        defaultValue={sexo}
+        open={openSexo}
+        setOpen={setOpenSexo}
+        items={[{ label: 'Macho', value: 'Macho' }, { label: 'Fêmea', value: 'Fêmea' }]}
+        value={sexo}
+        setValue={setSexo}
         placeholder="Sexo"
         containerStyle={styles.pickerContainer}
         style={styles.picker}
-        onChangeItem={(item) => setSexo(item.value)}
       />
 
       <CustomTextInput placeholder="Comportamento" value={comportamento} onChangeText={setComportamento} />
@@ -263,6 +270,8 @@ const styles = StyleSheet.create({
 });
 
 export default AddPet;
+
+
 
 
 

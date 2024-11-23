@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, Modal, TextInput, Button } from 'react-native';
+import { ScrollView, View, Text, Image, TouchableOpacity, StyleSheet, Modal, TextInput, Button } from 'react-native';
 import { Ionicons, FontAwesome, Entypo } from '@expo/vector-icons';
 import { getUserId } from '../storage'; 
 import RoundedButton from '../../components/RoundedButton';
 import ipConf from '../ipconfig';
+import { clearUserId } from '../storage';
 
 const SettingsScreen = ({ navigation }) => {
     const [nome, setNome] = useState('');
@@ -64,6 +65,17 @@ const SettingsScreen = ({ navigation }) => {
         }
     };
 
+    const SignOut = async () => {
+        try {
+          await clearUserId(); 
+          Alert.alert('Logout', 'Você saiu da conta com sucesso.');
+          router.replace('/signin'); 
+        } catch (error) {
+          console.error('Erro ao sair:', error);
+          Alert.alert('Erro', 'Não foi possível sair da conta.');
+        }
+      };
+
     const Deletar = async () => {
         try {
             let response = await fetch(`${ipConf()}/usuarios/${idUsuario}`, {
@@ -87,7 +99,7 @@ const SettingsScreen = ({ navigation }) => {
     
 
     return (
-        <View style={styles.container}>
+        <ScrollView style={styles.container}>
             <View style={styles.profileContainer}>
                 <Image
                     source={require('../../../assets/ThiagoImage.jpg')}
@@ -122,6 +134,10 @@ const SettingsScreen = ({ navigation }) => {
                 <Text style={styles.adText}>Anúncio</Text>
             </View>
 
+            <TouchableOpacity style={styles.logoutButton} onPress={SignOut}>
+                <Text style={styles.logoutText}>Sair</Text>
+            </TouchableOpacity>
+
             <Modal
                 transparent={true}
                 animationType="slide"
@@ -151,7 +167,7 @@ const SettingsScreen = ({ navigation }) => {
                     </View>
                 </View>
             </Modal>
-        </View>
+        </ScrollView>
     );
 };
 
@@ -242,6 +258,15 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: 'bold',
     },
+    logoutButton: {
+        backgroundColor: '#FF5733',
+        padding: 10,
+        borderRadius: 5,
+      },
+      logoutText: {
+        color: '#fff',
+        fontWeight: 'bold',
+      },
 });
 
 export default SettingsScreen;

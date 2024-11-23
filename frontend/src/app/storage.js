@@ -37,3 +37,12 @@ export const getUserId = async () => {
   }
 };
 
+export const clearUserId = async () => {
+  try {
+    await AsyncStorage.removeItem('user-id');
+    console.log('Usuário desconectado');
+  } catch (e) {
+    console.error('Erro ao limpar os dados do usuário:', e);
+  }
+};
+
