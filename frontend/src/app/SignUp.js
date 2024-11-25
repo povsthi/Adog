@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView, TextInput } from 'react-native';
-import * as Location from 'expo-location';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Alert,
+  ScrollView,
+  Image,
+} from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import CustomTextInput from '../components/CustomTextInput';
 import RoundedButton from '../components/RoundedButton';
 import Label from '../components/Label';
@@ -18,80 +26,43 @@ const SignUp = () => {
   const [confirmarSenha, setConfirmarSenha] = useState('');
   const [moradia, setMoradia] = useState('');
   const [foto, setFoto] = useState(null); 
-  const [fotoUrl, setFotoUrl] = useState('');
+  const [fotoUrl, setFotoUrl] = useState(''); 
   const [showPassword, setShowPassword] = useState(false);
-  const [location, setLocation] = useState({ latitude: null, longitude: null });
   const router = useRouter();
 
-  useEffect(() => {
-    requestLocationPermission();
-  }, []);
-
-  const requestLocationPermission = async () => {
-    try {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert('Erro', 'Permissão de localização negada. Por favor, habilite as permissões de localização.');
-        return;
-      }
-      const locationServicesEnabled = await Location.hasServicesEnabledAsync();
-      if (!locationServicesEnabled) {
-        Alert.alert('Erro', 'Os serviços de localização estão desativados. Habilite-os nas configurações do dispositivo.');
-        return;
-      }
-      getCurrentLocation();
-    } catch (error) {
-      console.error(error);
-      Alert.alert('Erro', 'Houve um problema ao solicitar permissões de localização.');
-    }
-  };
-
-  const formatData = (text) => {
-    let data = text.replace(/\D/g, '');
-
-    if (data.length > 8) {
-      data = data.slice(0, 8);
-    }
-
-    data = data.replace(/(\d{2})(\d)/, '$1/$2');
-    data = data.replace(/(\d{2})(\d)/, '$1/$2');
-
-    return data;
-  };
-
-  const getCurrentLocation = async () => {
-    try {
-      const location = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.High,
-      });
-      setLocation({
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
-      });
-    } catch (error) {
-      console.error(error);
-      Alert.alert('Erro', 'Não foi possível obter sua localização. Verifique suas configurações de localização.');
-    }
-  };
-
   const selecionarFoto = async () => {
-    const result = await pickImage(); 
-    if (result) {
-      setFoto(result.uri); 
-      setLoadingImage(true);
-      const uploadedUrl = await onFileUpload(result.base64); 
-      setLoadingImage(false);
-      if (uploadedUrl) {
-        setFotoUrl(uploadedUrl); 
-        Alert.alert('Sucesso!', 'Imagem carregada com sucesso.');
-      } else {
-        Alert.alert('Erro!', 'Não foi possível carregar a imagem.');
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permissão necessária', 'Acesso à galeria negado.');
+        return;
       }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 1,
+      });
+
+      if (!result.canceled) {
+        const imageUri = result.assets[0].uri; 
+        setFoto(imageUri); 
+
+        const uploadedUrl = await uploadImage(imageUri);
+        setFotoUrl(uploadedUrl); 
+        Alert.alert('Sucesso!', 'Imagem enviada com sucesso.');
+      } else {
+        Alert.alert('Cancelado', 'Nenhuma imagem foi selecionada.');
+      }
+    } catch (error) {
+      console.error('Erro ao selecionar imagem:', error);
+      Alert.alert('Erro', 'Não foi possível selecionar a imagem.');
     }
   };
 
-  const Cadastrar = async () => { 
-    if (!nome || !email || !senha || !confirmarSenha || !moradia || fotoUrl) {
+  const Cadastrar = async () => {
+    if (!nome || !email || !senha || !confirmarSenha || !moradia || !fotoUrl) {
       Alert.alert('Erro', 'Todos os campos são obrigatórios!');
       return;
     }
@@ -101,9 +72,13 @@ const SignUp = () => {
       return;
     }
   
-    const userObj = { nome, email, senha, moradia, latitude: location.latitude, longitude: location.longitude, foto: fotoUrl };
-    const jsonBody = JSON.stringify(userObj);
-    console.log(jsonBody);
+    const userObj = {
+      nome,
+      email,
+      senha,
+      moradia,
+      foto: fotoUrl,
+    };
   
     try {
       const response = await fetch(`${ipConf()}/usuarios`, {
@@ -112,58 +87,78 @@ const SignUp = () => {
           'Content-Type': 'application/json',
           Accept: 'application/json',
         },
-        body: jsonBody,
+        body: JSON.stringify(userObj),
       });
   
       const json = await response.json();
-      console.log("Resposta do servidor:", json);
+      console.log(json); 
   
-      if (json.affectedRows && json.affectedRows > 0) {
-        const userId = json.id || json.userId; 
-        if (userId) {
-          await storeUserId(userId.toString()); 
-        }
+
+      if (json.id) {
+        await storeUserId(json.id.toString());
         router.replace('/dashboard');
       } else {
-        Alert.alert('Erro', 'Falha no cadastro. Tente novamente.');
+        Alert.alert('Erro', 'ID não foi retornado corretamente.');
       }
-      
     } catch (err) {
-      console.log(err);
+      console.error('Erro no cadastro:', err);
       Alert.alert('Erro', 'Ocorreu um erro no cadastro.');
     }
   };
   
-
+  
   return (
     <View style={styles.container}>
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <View style={styles.formContainer}>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <View style={styles.formContainer}>
           <Text style={styles.title}>Adicione as suas informações</Text>
 
           <TouchableOpacity style={styles.fotoContainer} onPress={selecionarFoto}>
-          {foto ? (
-            <Image source={{ uri: foto.uri }} style={styles.foto} />
-          ) : (
-            <Text style={styles.fotoPlaceholder}>+</Text>
-          )}
-        </TouchableOpacity>
+            {foto ? (
+              <Image source={{ uri: foto }} style={styles.foto} />
+            ) : (
+              <Text style={styles.fotoPlaceholder}>+</Text>
+            )}
+          </TouchableOpacity>
 
           <Label text="Nome" />
-          <CustomTextInput placeholder="Digite seu nome" value={nome} onChangeText={setNome} />
+          <CustomTextInput
+            placeholder="Digite seu nome"
+            value={nome}
+            onChangeText={setNome}
+          />
 
           <Label text="E-mail" />
-          <CustomTextInput placeholder="Digite seu e-mail" value={email} onChangeText={setEmail} />
+          <CustomTextInput
+            placeholder="Digite seu e-mail"
+            value={email}
+            onChangeText={setEmail}
+          />
 
           <Label text="Data de Nascimento" />
-          <CustomTextInput placeholder="DD/MM/AAAA" value={data} onChangeText={text => setDataNascimento(formatData(text))} />
+          <CustomTextInput
+            placeholder="DD/MM/AAAA"
+            value={data}
+            onChangeText={setDataNascimento}
+          />
 
           <Label text="Tipo de Moradia" />
           <TouchableOpacity onPress={() => setMoradia('Casa')}>
-            <Text style={[styles.option, moradia === 'Casa' && styles.selectedOption]}>Casa</Text>
+            <Text
+              style={[styles.option, moradia === 'Casa' && styles.selectedOption]}
+            >
+              Casa
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={() => setMoradia('Apartamento')}>
-            <Text style={[styles.option, moradia === 'Apartamento' && styles.selectedOption]}>Apartamento</Text>
+            <Text
+              style={[
+                styles.option,
+                moradia === 'Apartamento' && styles.selectedOption,
+              ]}
+            >
+              Apartamento
+            </Text>
           </TouchableOpacity>
 
           <Label text="Senha" />
@@ -174,7 +169,11 @@ const SignUp = () => {
             secureTextEntry={!showPassword}
             rightIcon={
               <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                <Ionicons name={showPassword ? 'eye-off' : 'eye'} size={24} color="grey" />
+                <Ionicons
+                  name={showPassword ? 'eye-off' : 'eye'}
+                  size={24}
+                  color="grey"
+                />
               </TouchableOpacity>
             }
           />
@@ -191,13 +190,36 @@ const SignUp = () => {
           <TouchableOpacity onPress={() => router.push('/signin')}>
             <Text style={styles.signInText}>Já tenho conta</Text>
           </TouchableOpacity>
-          </View>
-        </ScrollView>
-      </View>
+        </View>
+      </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  formContainer: {
+    borderColor: '#000',
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 20,
+    backgroundColor: '#F7F7F7',
+    width: '100%',
+    maxWidth: 400,
+    marginVertical: 20,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
   fotoContainer: {
     width: 100,
     height: 100,
@@ -206,6 +228,7 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     justifyContent: 'center',
     alignItems: 'center',
+    alignSelf: 'center', 
     marginBottom: 20,
   },
   foto: {
@@ -217,39 +240,6 @@ const styles = StyleSheet.create({
     fontSize: 24,
     color: '#ccc',
   },
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    
-  },
-  formContainer: {
-    borderColor: '#000000', 
-    borderWidth: 1, 
-    borderRadius: 10, 
-    padding: 20,
-    backgroundColor: '#F7F7F7', 
-    width: '100%',
-    maxWidth: 400, 
-    marginVertical: 20,
-    
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#000',
-    borderRadius: 5,
-    padding: 10,
-    marginBottom: 15,
-    backgroundColor: '#fff',
-  },
   option: {
     padding: 10,
     borderWidth: 1,
@@ -259,7 +249,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   selectedOption: {
-    borderColor: '#000080',
+    borderColor: '#000',
     backgroundColor: '#d3d3d3',
   },
   signInText: {

@@ -92,6 +92,8 @@ app.post('/usuarios', (req, res) => {
     execSQLQuery(query, id, res);
 });
 
+
+
 app.put('/usuarios/:idUsuario', (req, res) => {
     const idUsuario = req.params.idUsuario; 
     const { email, senha, nome, cpf, tipo, foto, data_nascimento, morada, latitude, longitude, usuario_tipo } = req.body;

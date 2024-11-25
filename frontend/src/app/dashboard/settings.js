@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { ScrollView, View, Text, Image, TouchableOpacity, StyleSheet, Modal, TextInput, Button } from 'react-native';
+import { ScrollView, View, Text, Image, TouchableOpacity, StyleSheet, Modal, TextInput, Alert } from 'react-native';
 import { Ionicons, FontAwesome, Entypo } from '@expo/vector-icons';
 import { getUserId } from '../storage'; 
 import RoundedButton from '../../components/RoundedButton';
 import ipConf from '../ipconfig';
 import { clearUserId } from '../storage';
+import { useRouter } from 'expo-router';
+
 
 const SettingsScreen = ({ navigation }) => {
     const [nome, setNome] = useState('');
@@ -12,6 +14,7 @@ const SettingsScreen = ({ navigation }) => {
     const [senha, setSenha] = useState('');
     const [idUsuario, setIdUsuario] = useState();
     const [modalVisible, setModalVisible] = useState(false); 
+    const router = useRouter();
 
     const readId = async () => {
         const idUsuario = await getUserId(); 

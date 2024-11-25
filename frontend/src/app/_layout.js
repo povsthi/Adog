@@ -17,7 +17,7 @@ export default function Layout() {
   };
 
   return (
-    <Stack
+        <Stack
       screenOptions={{
         headerTitle: () => (
           <TouchableOpacity onPress={handleLogoPress}>
@@ -27,7 +27,8 @@ export default function Layout() {
         headerStyle: {
           backgroundColor: '#212A75',
         },
-        headerTintColor: '#FFF', 
+        headerTintColor: '#FFF',
+        headerBackTitleVisible: false, 
       }}
     >
       <Stack.Screen 
@@ -71,6 +72,7 @@ export default function Layout() {
         name="veterinarians" 
       />
     </Stack>
+
   );
 }
 
