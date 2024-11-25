@@ -2,20 +2,37 @@ import React, { useState, useEffect } from 'react';
 import { View, FlatList, ActivityIndicator, StyleSheet, Text } from 'react-native';
 import NotCard from '../components/NotCard';
 import ipConf from './ipconfig';
+import { getUserId } from './storage';
 
-const Notification = () => {
+const Notification = ({ route }) => {
   const [notificacoes, setNotificacoes] = useState([]);
-  const [carregando, setCarregando] = useState(true); // Estado para indicador de carregamento
-  const [erro, setErro] = useState(null); // Estado para mensagens de erro
+  const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState(null);
+  const [idUsuario, setIdUsuario] = useState('');
+
+  const readId = async () => {
+    const idUsuario = await getUserId(); 
+    setIdUsuario(idUsuario);
+    console.log("id:" + idUsuario);
+};
+
+  useEffect(() => {
+    readId(); 
+  }, []);
 
   useEffect(() => {
     const buscarNotificacoes = async () => {
       try {
-        const response = await fetch(`${ipConf()}/notificacoes`, {
+        const response = await fetch(`${ipConf()}/notificacoes/${idUsuario}`, {
           method: 'GET',
         });
+
+        if (!response.ok) {
+          throw new Error('Erro ao buscar notificações');
+        }
+
         const data = await response.json();
-        setNotificacoes(data);
+        setNotificacoes(data.notificacoes || []); 
       } catch (error) {
         console.error('Erro ao buscar notificações:', error);
         setErro('Não foi possível carregar as notificações.');
@@ -25,19 +42,25 @@ const Notification = () => {
     };
 
     buscarNotificacoes();
-  }, []);
+  }, [idUsuario]);
 
-  const marcarComoLido = async (id) => {
+  const marcarComoLido = async (idAdota) => {
     try {
-      await fetch(`${ipConf()}/notificacoes/${id}`, {
-        method: 'PATCH',
+      const response = await fetch(`${ipConf()}/notificacaolida/${idAdota}`, {
+        method: 'PUT', 
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lido: true }),
       });
+
+      if (!response.ok) {
+        throw new Error('Erro ao marcar notificação como lida');
+      }
+
 
       setNotificacoes((prevNotificacoes) =>
         prevNotificacoes.map((notificacao) =>
-          notificacao.id === id ? { ...notificacao, lido: true } : notificacao
+          notificacao.IDAdota === idAdota
+            ? { ...notificacao, Lida: true }
+            : notificacao
         )
       );
     } catch (error) {
@@ -68,7 +91,10 @@ const Notification = () => {
         renderItem={({ item }) => (
           <NotCard notificacao={item} marcarComoLido={marcarComoLido} />
         )}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item) => item.IDAdota.toString()}
+        ListEmptyComponent={
+          <Text style={styles.emptyText}>Nenhuma notificação encontrada.</Text>
+        }
       />
     </View>
   );
@@ -88,7 +114,14 @@ const styles = StyleSheet.create({
     color: 'red',
     fontSize: 16,
   },
+  emptyText: {
+    textAlign: 'center',
+    marginTop: 20,
+    fontSize: 16,
+    color: '#777',
+  },
 });
 
 export default Notification;
+
 

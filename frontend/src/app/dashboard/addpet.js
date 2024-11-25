@@ -4,7 +4,7 @@ import CustomTextInput from '../../components/CustomTextInput';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { getUserId } from '../storage';
 import ipConf from '../ipconfig';
-import { uploadImage } from '../uploadImage';
+import uploadImage  from '../uploadImage';
 import * as ImagePicker from 'expo-image-picker';
 
 const AddPet = () => {
@@ -23,7 +23,6 @@ const AddPet = () => {
   const [loading, setLoading] = useState(false);
   const [idUsuario, setIdUsuario] = useState(null);
 
-  // Estados para gerenciar abertura dos menus DropDownPicker
   const [openTipo, setOpenTipo] = useState(false);
   const [openRaca, setOpenRaca] = useState(false);
   const [openPorte, setOpenPorte] = useState(false);
@@ -87,9 +86,7 @@ const AddPet = () => {
 
   const RegistraPet = async () => {
     if (!validarFormulario()) return;
-
-    console.log('Iniciando o registro do pet...');
-
+  
     const petData = new FormData();
     petData.append('nome', nomePet);
     petData.append('tipo', tipoPet === 'Outro' ? outroTipo : tipoPet);
@@ -101,30 +98,29 @@ const AddPet = () => {
     petData.append('cidade', cidade);
     petData.append('rua', rua);
     petData.append('fk_usuario_id', idUsuario);
-
-    if (foto) {
-      try {
-        const imageUrl = await uploadImage(foto.uri);
-        petData.append('foto', imageUrl);
-      } catch (error) {
-        console.error('Erro ao fazer upload da foto:', error);
-        Alert.alert('Erro', 'Erro ao carregar a imagem.');
-        return;
-      }
-    }
-
+  
     try {
       setLoading(true);
+  
+      if (foto) {
+        try {
+          const imageUrl = await uploadImage(foto.uri); 
+          petData.append('foto', imageUrl); 
+        } catch (error) {
+          console.error('Erro ao fazer upload da foto:', error);
+          Alert.alert('Erro', 'Erro ao carregar a imagem.');
+          return;
+        }
+      }
+
       const response = await fetch(`${ipConf()}/pets`, {
         method: 'POST',
-        body: petData
+        body: petData,
       });
-
-      console.log('Resposta do servidor:', response);
-
+  
       if (response.ok) {
         Alert.alert('Sucesso', 'Pet cadastrado com sucesso!');
-        console.log('Cadastro realizado com sucesso.');
+        
         setNomePet('');
         setTipoPet('');
         setRaca('');
@@ -147,6 +143,8 @@ const AddPet = () => {
       setLoading(false);
     }
   };
+  
+  
 
   return (
     <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>

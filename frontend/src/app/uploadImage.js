@@ -1,89 +1,35 @@
-import { useState } from 'react';
-import { Button, Image, View, StyleSheet, ActivityIndicator } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
+export default async function uploadImage(imageUri) {
+  const auth = "Client-ID 1528cabed767a7e";
+  const formData = new FormData();
+  formData.append("image", {
+    uri: imageUri,
+    type: "image/jpeg",
+    name: "photo.jpg",
+  });
 
-export default function uploadImage() {
-  const [image, setImage] = useState(null);
-  const [file, setFile] = useState(null);
-  const [loading, setLoading] = useState(false);
-
-  const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images, 
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-      base64: true,
+  try {
+    const response = await fetch("https://api.imgur.com/3/image/", {
+      method: "POST",
+      headers: {
+        Authorization: auth,
+        Accept: "application/json",
+      },
+      body: formData,
     });
 
-    console.log(result);
+    const data = await response.json();
 
-    if (!result.canceled) {
-      setImage(result.assets[0].uri);
-      setFile(result.assets[0].base64);
+    if (response.ok) {
+      return data.data.link; 
+    } else {
+      throw new Error(`Erro no upload: ${data.data.error}`);
     }
-  };
-
-  const onFileUpload = async () => {
-    if (!file) {
-      alert("Nenhuma imagem selecionada!");
-      return;
-    }
-
-    setLoading(true);
-
-    const auth = "Client-ID 1528cabed767a7e";
-    
-
-    const formData = new FormData();
-    formData.append("image", file);
-    formData.append("type", "base64"); 
-
-    try {
-      const response = await fetch("https://api.imgur.com/3/image/", {
-        method: "POST",
-        headers: {
-          Authorization: auth,
-          Accept: "application/json",
-        },
-        body: formData,
-      });
-
-      const data = await response.json();
-      setLoading(false); 
-
-      if (response.ok) {
-        alert("Upload bem-sucedido!");
-        console.log("Imgur Response:", data.link);
-      } else {
-        alert(`Erro no upload: ${data.data.error}`);
-      }
-    } catch (err) {
-      setLoading(false);
-      console.error(err);
-      alert("Erro ao fazer upload. Tente novamente.");
-    }
-  };
-
-  return (
-    <View style={styles.container}>
-      <Button title="Escolha uma imagem" onPress={pickImage} />
-      {image && <Image source={{ uri: image }} style={styles.image} />}
-      {image && !loading && <Button onPress={onFileUpload} title="Fazer Upload" />}
-      {loading && <ActivityIndicator size="large" color="#0000ff" />}
-    </View>
-  );
+  } catch (error) {
+    console.error("Erro ao fazer upload:", error);
+    throw error;
+  }
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  image: {
-    width: 200,
-    height: 200,
-    marginVertical: 10,
-  },
-});
+
+
+

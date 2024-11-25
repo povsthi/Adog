@@ -134,8 +134,8 @@ const SettingsScreen = ({ navigation }) => {
                 <Text style={styles.adText}>Anúncio</Text>
             </View>
 
-            <TouchableOpacity style={styles.logoutButton} onPress={SignOut}>
-                <Text style={styles.logoutText}>Sair</Text>
+            <TouchableOpacity style={styles.button} onPress={SignOut}>
+                <Text style={styles.buttonText}>Sair</Text>
             </TouchableOpacity>
 
             <Modal
@@ -157,6 +157,12 @@ const SettingsScreen = ({ navigation }) => {
                             value={email}
                             onChangeText={setEmail}
                             placeholder="Email"
+                            style={styles.input}
+                        />
+                        <TextInput
+                            value={senha}
+                            onChangeText={setSenha}
+                            placeholder="Senha"
                             style={styles.input}
                         />
                          <RoundedButton title="Salvar" onPress={Atualizar} />
@@ -258,11 +264,6 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: 'bold',
     },
-    logoutButton: {
-        backgroundColor: '#FF5733',
-        padding: 10,
-        borderRadius: 5,
-      },
       logoutText: {
         color: '#fff',
         fontWeight: 'bold',
