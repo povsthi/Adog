@@ -14,6 +14,8 @@ const SettingsScreen = ({ navigation }) => {
     const [senha, setSenha] = useState('');
     const [idUsuario, setIdUsuario] = useState();
     const [modalVisible, setModalVisible] = useState(false); 
+    const [fotoUrl, setFotoUrl] = useState('');
+
     const router = useRouter();
 
     const readId = async () => {
@@ -40,6 +42,8 @@ const SettingsScreen = ({ navigation }) => {
                     if (resJson.length > 0) {
                         setNome(resJson[0].Nome);
                         setEmail(resJson[0].Email);
+                        setSenha(resJson[0].Senha);
+                        setFotoUrl(resJson[0].Foto);
                     }
                 } catch (e) {
                     console.log("Erro ao buscar usuário:", e);
@@ -105,7 +109,7 @@ const SettingsScreen = ({ navigation }) => {
         <ScrollView style={styles.container}>
             <View style={styles.profileContainer}>
                 <Image
-                    source={require('../../../assets/ThiagoImage.jpg')}
+                    source={{uri: fotoUrl || '../../../assets/useravatar.jpg'}}
                     style={styles.profileImage}
                 />
                 <TouchableOpacity onPress={() => setModalVisible(true)}>

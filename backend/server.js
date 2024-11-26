@@ -92,8 +92,6 @@ app.post('/usuarios', (req, res) => {
     execSQLQuery(query, id, res);
 });
 
-
-
 app.put('/usuarios/:idUsuario', (req, res) => {
     const idUsuario = req.params.idUsuario; 
     const { email, senha, nome, cpf, tipo, foto, data_nascimento, morada, latitude, longitude, usuario_tipo } = req.body;
@@ -184,8 +182,7 @@ app.get('/pets/usuario/:idUsuario', (req, res) => {
     const idUsuario = req.params.idUsuario; 
     execSQLQuery(`SELECT * FROM Pet WHERE FK_Usuario_ID = ?`, [idUsuario], res); 
   });  
-
-  
+ 
   app.put('/pets/:id', (req, res) => {
     console.log('Recebendo requisição PUT em /pets/:id');
   
