@@ -8,6 +8,7 @@ import {
   ScrollView,
   Image,
 } from 'react-native';
+import * as Location from 'expo-location';
 import * as ImagePicker from 'expo-image-picker';
 import CustomTextInput from '../components/CustomTextInput';
 import RoundedButton from '../components/RoundedButton';
@@ -28,7 +29,60 @@ const SignUp = () => {
   const [foto, setFoto] = useState(null); 
   const [fotoUrl, setFotoUrl] = useState(''); 
   const [showPassword, setShowPassword] = useState(false);
+  const [location, setLocation] = useState({ latitude: null, longitude: null });
   const router = useRouter();
+
+  useEffect(() => {
+    requestLocationPermission();
+  }, []);
+
+  const requestLocationPermission = async () => {
+    try {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Erro', 'Permissão de localização negada. Por favor, habilite as permissões de localização.');
+        return;
+      }
+      const locationServicesEnabled = await Location.hasServicesEnabledAsync();
+      if (!locationServicesEnabled) {
+        Alert.alert('Erro', 'Os serviços de localização estão desativados. Habilite-os nas configurações do dispositivo.');
+        return;
+      }
+      getCurrentLocation();
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Erro', 'Houve um problema ao solicitar permissões de localização.');
+    }
+  };
+
+  const getCurrentLocation = async () => {
+    try {
+      const location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.High,
+      });
+      setLocation({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      });
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Erro', 'Não foi possível obter sua localização. Verifique suas configurações de localização.');
+    }
+  };
+
+  const formatData = (text) => {
+    let data = text.replace(/\D/g, '');
+
+    if (data.length > 8) {
+      data = data.slice(0, 8);
+    }
+
+    data = data.replace(/(\d{2})(\d)/, '$1/$2');
+    data = data.replace(/(\d{2})(\d)/, '$1/$2');
+
+    return data;
+  };
+
 
   const selecionarFoto = async () => {
     try {
@@ -63,49 +117,56 @@ const SignUp = () => {
 
   const Cadastrar = async () => {
     if (!nome || !email || !senha || !confirmarSenha || !moradia || !fotoUrl) {
-      Alert.alert('Erro', 'Todos os campos são obrigatórios!');
-      return;
+        Alert.alert('Erro', 'Todos os campos são obrigatórios!');
+        return;
     }
-  
-    if (senha !== confirmarSenha) {
-      Alert.alert('Erro!', 'Senhas diferentes');
-      return;
-    }
-  
-    const userObj = {
-      nome,
-      email,
-      senha,
-      moradia,
-      foto: fotoUrl,
-    };
-  
-    try {
-      const response = await fetch(`${ipConf()}/usuarios`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-        body: JSON.stringify(userObj),
-      });
-  
-      const json = await response.json();
-      console.log(json); 
-  
 
-      if (json.id) {
-        await storeUserId(json.id.toString());
-        router.replace('/dashboard');
-      } else {
-        Alert.alert('Erro', 'ID não foi retornado corretamente.');
-      }
-    } catch (err) {
-      console.error('Erro no cadastro:', err);
-      Alert.alert('Erro', 'Ocorreu um erro no cadastro.');
+    if (senha !== confirmarSenha) {
+        Alert.alert('Erro!', 'Senhas diferentes');
+        return;
     }
-  };
-  
+
+    if (location.latitude === null || location.longitude === null) {
+      Alert.alert('Erro', 'Localização não disponível.');
+      return;
+    }
+
+    const userObj = {
+        nome,
+        email,
+        senha,
+        moradia,
+        latitude: location.latitude,
+        longitude: location.longitude,
+        foto: fotoUrl,
+        tipo: "comum", 
+    };
+
+    try {
+        const response = await fetch(`${ipConf()}/usuarios`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+            },
+            body: JSON.stringify(userObj),
+        });
+
+        const json = await response.json();
+        console.log(json);
+
+        if (response.status === 201 && json.id) {
+            await storeUserId(json.id.toString());
+            router.replace('/dashboard');
+        } else {
+            Alert.alert('Erro', 'ID não foi retornado corretamente.');
+        }
+    } catch (err) {
+        console.error('Erro no cadastro:', err);
+        Alert.alert('Erro', 'Ocorreu um erro no cadastro.');
+    }
+};
+
   
   return (
     <View style={styles.container}>
@@ -136,10 +197,10 @@ const SignUp = () => {
           />
 
           <Label text="Data de Nascimento" />
-          <CustomTextInput
-            placeholder="DD/MM/AAAA"
-            value={data}
-            onChangeText={setDataNascimento}
+          <CustomTextInput 
+          placeholder="DD/MM/AAAA"
+          value={data} 
+          onChangeText={text => setDataNascimento(formatData(text))} 
           />
 
           <Label text="Tipo de Moradia" />

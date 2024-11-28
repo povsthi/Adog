@@ -80,16 +80,38 @@ app.get('/usuarios/:id', (req, res) => {
 
 app.post('/usuarios', (req, res) => {
     console.log('Recebendo requisição POST em /usuarios');
+
     const { email, senha, nome, tipo, foto, data_nascimento, morada, latitude, longitude, usuario_tipo } = req.body;
     console.log('Dados recebidos:', req.body);
 
-    const id = [email, senha, nome, tipo, foto, data_nascimento, morada, latitude, longitude, usuario_tipo];
+    if (!email || !senha || !nome || !tipo || !foto || !data_nascimento || !morada || !latitude || !longitude || !usuario_tipo) {
+        return res.status(400).json({ 
+            error: 'Todos os campos são obrigatórios!', 
+            missing: { email, senha, nome, tipo, foto, data_nascimento, morada, latitude, longitude, usuario_tipo }
+        });
+    }
+
+    const userData = [email, senha, nome, tipo, foto, data_nascimento, morada, latitude, longitude, usuario_tipo];
     const query = `
         INSERT INTO Usuario (Email, Senha, Nome, Tipo, Foto, Data_nascimento, Morada, Latitude, Longitude, Usuario_TIPO)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
-    execSQLQuery(query, id, res);
+    const connection = mysql.createConnection(db);
+    connection.connect();
+
+    connection.query(query, userData, (error, results) => {
+        connection.end();
+    
+        if (error) {
+            console.error("Erro ao inserir usuário:", error);
+            return res.status(500).json({ error: 'Erro ao inserir usuário.', detalhes: error.message });
+        }
+    
+        console.log('Usuário cadastrado com ID:', results.insertId);  
+        res.status(201).json({ message: 'Usuário cadastrado com sucesso!', id: results.insertId });
+    });
+    
 });
 
 app.put('/usuarios/:idUsuario', (req, res) => {
@@ -142,14 +164,12 @@ app.post('/pets', async (req, res) => {
     console.log('Recebendo requisição POST em /pets');
     
     const { tipo, raca, nome, sexo, idade, porte, comportamento, cidade, rua, foto, fk_usuario_id } = req.body;
+    console.log('Dados recebidos: ', req.body);
     
     const petData = [tipo, raca, nome, sexo, idade, porte, comportamento, cidade, rua, foto, fk_usuario_id];
 
-    const petQuery = `
-    INSERT INTO Pet 
-    (Tipo, Raca, Nome, Sexo, Idade, Porte, Comportamento, Cidade, Rua, Foto_URL, FK_Usuario_ID)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
-  `;
+    const petQuery = `INSERT INTO Pet (Tipo, Raca, Nome, Sexo, Idade, Porte, Comportamento, Cidade, Rua, Foto_URL, FK_Usuario_ID)
+                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`;
   
     const connection = mysql.createConnection(db);
     connection.connect();
@@ -164,7 +184,7 @@ app.post('/pets', async (req, res) => {
   
       console.log('ID do pet cadastrado:', result.insertId);
       connection.end();
-      res.status(200).send('Pet cadastrado com sucesso.');
+      res.status(200).json({ message: 'Pet cadastrado com sucesso.' });
     });
   });
 
@@ -412,34 +432,6 @@ app.get('/matchs/:id', (req, res) => {
 
 /******************************* endpoints para favoritar o pet ******************************************************* */
 
-app.post('/favoritas', (req, res) => {
-    const { idUsuario, idPet } = req.body;
-
-    console.log('Recebendo requisição POST em /favoritas');
-    console.log('Dados recebidos:', req.body);
-
-    const checkQuery = `
-        SELECT * FROM Favorita WHERE FK_Usuario_ID = ? AND FK_Pet_ID_Animal = ?
-    `;
-    const checkParams = [idUsuario, idPet];
-
-    execSQLQuery(checkQuery, checkParams, (checkResult) => {
-        if (checkResult.length > 0) {
-            return res.status(400).json({ message: 'Este pet já foi favoritado por este usuário.' });
-        }
-
-        const insertQuery = `
-            INSERT INTO Favorita (FK_Pet_ID_Animal, FK_Usuario_ID)
-            VALUES (?, ?)
-        `;
-        const insertParams = [idPet, idUsuario];
-
-        execSQLQuery(insertQuery, insertParams, (insertResult) => {
-            res.status(200).json({ message: 'Pet favoritado com sucesso!' });
-        });
-    });
-});
-
 app.post('/favoritas/check', (req, res) => {
     const { idUsuario, idPet } = req.body;
 
@@ -463,7 +455,54 @@ app.post('/favoritas/check', (req, res) => {
         }),
     });
 });
+app.post('/favoritas', (req, res) => {
+    const { idUsuario, idPet } = req.body;
 
+    console.log('Recebendo requisição POST em /favoritas');
+    console.log('Dados recebidos:', req.body);
+
+    if (!idUsuario || !idPet) {
+        return res.status(400).json({ message: 'Campos idUsuario e idPet são obrigatórios!' });
+    }
+
+   
+    const checkQuery = `
+        SELECT COUNT(*) AS isFavorited
+        FROM Favorita
+        WHERE FK_Usuario_ID = ? AND FK_Pet_ID_Animal = ?
+    `;
+    const checkParams = [idUsuario, idPet];
+
+    execSQLQuery(checkQuery, checkParams, {
+        json: (checkResults) => {
+            const isFavorited = checkResults[0]?.isFavorited > 0;
+
+            if (isFavorited) {
+                return res.status(400).json({ message: 'Este pet já foi favoritado por este usuário.' });
+            }
+
+            
+            const insertQuery = `
+                INSERT INTO Favorita (FK_Pet_ID_Animal, FK_Usuario_ID)
+                VALUES (?, ?)
+            `;
+            const insertParams = [idPet, idUsuario];
+
+            
+            execSQLQuery(insertQuery, insertParams, {
+                json: (insertResults) => {
+                    res.status(200).json({ message: 'Pet favoritado com sucesso!', insertId: insertResults.insertId });
+                },
+                status: (statusCode) => ({
+                    json: (error) => res.status(statusCode).json(error),
+                }),
+            });
+        },
+        status: (statusCode) => ({
+            json: (error) => res.status(statusCode).json(error),
+        }),
+    });
+});
 
 app.delete('/desfavoritar', (req, res) => {
     const { FK_Usuario_ID, FK_Pet_ID_Animal } = req.body;

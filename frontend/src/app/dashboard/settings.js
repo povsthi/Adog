@@ -6,6 +6,9 @@ import RoundedButton from '../../components/RoundedButton';
 import ipConf from '../ipconfig';
 import { clearUserId } from '../storage';
 import { useRouter } from 'expo-router';
+import CustomTextInput from '../../components/CustomTextInput';
+import uploadImage from '../uploadImage';
+import * as ImagePicker from 'expo-image-picker';
 
 
 const SettingsScreen = ({ navigation }) => {
@@ -53,8 +56,39 @@ const SettingsScreen = ({ navigation }) => {
         fetchItem();
     }, [idUsuario]);
 
+    const selecionarFoto = async () => {
+        try {
+          const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+          if (status !== 'granted') {
+            Alert.alert('Permissão necessária', 'Acesso à galeria negado.');
+            return;
+          }
+    
+          const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 1,
+          });
+    
+          if (!result.canceled) {
+            const imageUri = result.assets[0].uri; 
+            setFoto(imageUri); 
+    
+            const uploadedUrl = await uploadImage(imageUri);
+            setFotoUrl(uploadedUrl); 
+            Alert.alert('Sucesso!', 'Imagem enviada com sucesso.');
+          } else {
+            Alert.alert('Cancelado', 'Nenhuma imagem foi selecionada.');
+          }
+        } catch (error) {
+          console.error('Erro ao selecionar imagem:', error);
+          Alert.alert('Erro', 'Não foi possível selecionar a imagem.');
+        }
+      };
+
     const Atualizar = async () => {
-        var userObj = { nome: nome, email: email, senha: senha };
+        var userObj = { nome: nome, email: email, senha: senha, foto:foto };
         var jsonBody = JSON.stringify(userObj);
         try {
             let response = await fetch(`${ipConf()}/usuarios/${idUsuario}`, {
@@ -107,12 +141,12 @@ const SettingsScreen = ({ navigation }) => {
 
     return (
         <ScrollView style={styles.container}>
-            <View style={styles.profileContainer}>
-                <Image
-                    source={{uri: fotoUrl || '../../../assets/useravatar.jpg'}}
-                    style={styles.profileImage}
-                />
+            <View style={styles.profileContainer}>        
                 <TouchableOpacity onPress={() => setModalVisible(true)}>
+                    <Image
+                        source={{uri: fotoUrl || '../../../assets/useravatar.jpg'}}
+                        style={styles.profileImage}
+                    />
                     <Text style={styles.profileName}>{nome}</Text>
                 </TouchableOpacity>
                 <Text style={styles.profileEmail}>{email}</Text> 
@@ -154,19 +188,26 @@ const SettingsScreen = ({ navigation }) => {
                 <View style={styles.modalContainer}>
                     <View style={styles.modalContent}>
                         <Text style={styles.modalTitle}>Editar Informações</Text>
-                        <TextInput
+                        <TouchableOpacity onPress={selecionarFoto} style={styles.photoContainer}>
+                            {fotoUrl ? (
+                            <Image source={{ uri: fotoUrl }} style={styles.photo} />
+                            ) : (
+                            <Text style={styles.photoPlaceholder}>Alterar Foto</Text>
+                            )}
+                        </TouchableOpacity>
+                        <CustomTextInput
                             value={nome}
                             onChangeText={setNome}
                             placeholder="Nome"
                             style={styles.input}
                         />
-                        <TextInput
+                        <CustomTextInput
                             value={email}
                             onChangeText={setEmail}
                             placeholder="Email"
                             style={styles.input}
                         />
-                        <TextInput
+                        <CustomTextInput
                             value={senha}
                             onChangeText={setSenha}
                             placeholder="Senha"
@@ -192,23 +233,30 @@ const styles = StyleSheet.create({
     profileContainer: {
         padding: 20,
         alignItems: 'center',
+        alignItems: 'center', 
+        justifyContent: 'center', 
         backgroundColor: '#E1E1E1',
     },
     profileImage: {
-        width: 60,
-        height: 60,
-        borderRadius: 30,
-    },
+        width: 80, 
+        height: 80,
+        borderRadius: 40,
+        marginBottom: 10, 
+      },
+      
     profileName: {
-        marginTop: 10,
+        marginTop: 10, 
         fontSize: 16,
         color: '#7D4CDB',
-    },
-    profileEmail: {
-        marginTop: 5,
+        textAlign: 'center', 
+      },
+      profileEmail: {
+        marginTop: 5, 
         fontSize: 14,
-        color: '#7D4CDB', 
-    },
+        color: '#7D4CDB',
+        textAlign: 'center', 
+      },
+      
     section: {
         marginTop: 20,
         paddingHorizontal: 20,
@@ -252,6 +300,23 @@ const styles = StyleSheet.create({
         fontSize: 18,
         marginBottom: 20,
     },
+    photoContainer: {
+        alignItems: 'center',
+        marginBottom: 20,
+      },
+      photo: {
+        width: 100, 
+        height: 100,
+        borderRadius: 50, 
+        borderWidth: 2,
+        borderColor: '#ccc',
+      },
+      photoPlaceholder: {
+        fontSize: 16,
+        color: '#aaa',
+        textAlign: 'center',
+      },
+      
     input: {
         borderWidth: 1,
         borderColor: '#ccc',

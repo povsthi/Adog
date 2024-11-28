@@ -3,7 +3,7 @@ import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 
 const PetCard = ({ pet, onPress }) => {
   
-  const imageSource = pet.URL ? { uri: pet.URL } : require('../../assets/default-pet-image.png'); 
+  const imageSource = pet.Foto_URL ? { uri: pet.Foto_URL } : require('../../assets/default-pet-image.png'); 
 
   return (
     <TouchableOpacity onPress={onPress}>

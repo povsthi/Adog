@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, View, TouchableOpacity, Text, StyleSheet, Image, Alert, ActivityIndicator } from 'react-native';
+import { ScrollView, KeyboardAvoidingView, TouchableOpacity, Text, StyleSheet, Image, Alert, ActivityIndicator, Platform } from 'react-native';
 import CustomTextInput from '../../components/CustomTextInput';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { getUserId } from '../storage';
@@ -20,6 +20,7 @@ const AddPet = () => {
   const [breeds, setBreeds] = useState([]);
   const [outroTipo, setOutroTipo] = useState('');
   const [foto, setFoto] = useState(null);
+  const [fotoUrl, setFotoUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [idUsuario, setIdUsuario] = useState(null);
 
@@ -65,19 +66,49 @@ const AddPet = () => {
   }, [tipoPet]);
 
   const selecionarFoto = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      setFoto(result.assets[0]);
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permissão necessária', 'Acesso à galeria negado.');
+        return;
+      }
+  
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 1,
+      });
+  
+      if (!result.canceled) {
+        const imageUri = result.assets[0].uri;
+        setFoto(imageUri);
+  
+        try {
+          const uploadedUrl = await uploadImage(imageUri);
+          if (uploadedUrl) {
+            setFotoUrl(uploadedUrl); 
+            Alert.alert('Sucesso!', 'Imagem enviada com sucesso.');
+          } else {
+            throw new Error('A URL retornada está inválida.');
+          }
+        } catch (uploadError) {
+          console.error('Erro ao fazer upload da imagem:', uploadError);
+          Alert.alert('Erro', 'Não foi possível enviar a imagem. Tente novamente.');
+          setFoto(null); 
+        }
+      } else {
+        Alert.alert('Cancelado', 'Nenhuma imagem foi selecionada.');
+      }
+    } catch (error) {
+      console.error('Erro ao selecionar imagem:', error);
+      Alert.alert('Erro', 'Não foi possível selecionar a imagem.');
     }
   };
+  
 
   const validarFormulario = () => {
-    if (!nomePet || !tipoPet || !raca || !sexo || !porte || !comportamento || !idade || !cidade || !rua) {
+    if (!nomePet || !tipoPet || !raca || !sexo || !porte || !comportamento || !idade || !foto || !cidade || !rua) {
       Alert.alert('Erro', 'Por favor, preencha todos os campos obrigatórios.');
       return false;
     }
@@ -87,40 +118,36 @@ const AddPet = () => {
   const RegistraPet = async () => {
     if (!validarFormulario()) return;
   
-    const petData = new FormData();
-    petData.append('nome', nomePet);
-    petData.append('tipo', tipoPet === 'Outro' ? outroTipo : tipoPet);
-    petData.append('raca', raca);
-    petData.append('sexo', sexo);
-    petData.append('porte', porte);
-    petData.append('comportamento', comportamento);
-    petData.append('idade', idade);
-    petData.append('cidade', cidade);
-    petData.append('rua', rua);
-    petData.append('fk_usuario_id', idUsuario);
+    const petData = {
+      nome: nomePet,
+      tipo: tipoPet === 'Outro' ? outroTipo : tipoPet,
+      raca: raca,
+      sexo: sexo,
+      porte: porte,
+      comportamento: comportamento,
+      idade: idade,
+      foto: fotoUrl,  
+      cidade: cidade,
+      rua: rua,
+      fk_usuario_id: idUsuario
+    };
+
+    console.log('Pet data:', petData);
   
     try {
       setLoading(true);
-  
-      if (foto) {
-        try {
-          const imageUrl = await uploadImage(foto.uri); 
-          petData.append('foto', imageUrl); 
-        } catch (error) {
-          console.error('Erro ao fazer upload da foto:', error);
-          Alert.alert('Erro', 'Erro ao carregar a imagem.');
-          return;
-        }
-      }
-
       const response = await fetch(`${ipConf()}/pets`, {
         method: 'POST',
-        body: petData,
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json'
+        },
+        body: JSON.stringify(petData),
       });
   
+      const json = await response.json();
       if (response.ok) {
         Alert.alert('Sucesso', 'Pet cadastrado com sucesso!');
-        
         setNomePet('');
         setTipoPet('');
         setRaca('');
@@ -130,10 +157,10 @@ const AddPet = () => {
         setCidade('');
         setRua('');
         setOutroTipo('');
+        setComportamento('');
         setFoto(null);
+        setFotoUrl('');
       } else {
-        const errorText = await response.text();
-        console.error('Erro ao cadastrar o pet:', errorText);
         Alert.alert('Erro', 'Erro ao cadastrar o pet.');
       }
     } catch (error) {
@@ -144,81 +171,95 @@ const AddPet = () => {
     }
   };
   
-  
-
   return (
-    <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
-      <TouchableOpacity style={styles.fotoContainer} onPress={selecionarFoto}>
-        {foto ? (
-          <Image source={{ uri: foto.uri }} style={styles.foto} />
-        ) : (
-          <Text style={styles.fotoPlaceholder}>+</Text>
-        )}
-      </TouchableOpacity>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+        <TouchableOpacity style={styles.fotoContainer} onPress={selecionarFoto}>
+          {foto ? (
+            <Image source={{ uri: foto.uri }} style={styles.foto} />
+          ) : (
+            <Text style={styles.fotoPlaceholder}>+</Text>
+          )}
+        </TouchableOpacity>
 
-      <CustomTextInput placeholder="Nome" value={nomePet} onChangeText={setNomePet} />
-      <CustomTextInput placeholder="Idade" value={idade} onChangeText={setIdade} />
+        <CustomTextInput placeholder="Nome" value={nomePet} onChangeText={setNomePet} />
+        <CustomTextInput placeholder="Idade" value={idade} onChangeText={setIdade} />
 
-      <DropDownPicker
-        open={openTipo}
-        setOpen={setOpenTipo}
-        items={[{ label: 'Cachorro', value: 'Cachorro' }, { label: 'Gato', value: 'Gato' }, { label: 'Outro', value: 'Outro' }]}
-        value={tipoPet}
-        setValue={setTipoPet}
-        placeholder="Tipo de pet"
-        containerStyle={styles.pickerContainer}
-        style={styles.picker}
-      />
-
-      {tipoPet && tipoPet !== 'Outro' && (
         <DropDownPicker
-          open={openRaca}
-          setOpen={setOpenRaca}
-          items={breeds}
-          value={raca}
-          setValue={setRaca}
-          placeholder="Raça"
-          containerStyle={styles.pickerContainer}
+          open={openTipo}
+          setOpen={setOpenTipo}
+          items={[
+            { label: 'Cachorro', value: 'Cachorro' },
+            { label: 'Gato', value: 'Gato' },
+            { label: 'Outro', value: 'Outro' },
+          ]}
+          value={tipoPet}
+          setValue={setTipoPet}
+          placeholder="Tipo de pet"
+          containerStyle={[styles.pickerContainer, { zIndex: 4 }]}
           style={styles.picker}
         />
-      )}
 
-      <DropDownPicker
-        open={openPorte}
-        setOpen={setOpenPorte}
-        items={[{ label: 'Pequeno', value: 'Pequeno' }, { label: 'Médio', value: 'Médio' }, { label: 'Grande', value: 'Grande' }]}
-        value={porte}
-        setValue={setPorte}
-        placeholder="Porte"
-        containerStyle={styles.pickerContainer}
-        style={styles.picker}
-      />
+        {tipoPet && tipoPet !== 'Outro' && (
+          <DropDownPicker
+            open={openRaca}
+            setOpen={setOpenRaca}
+            items={breeds}
+            value={raca}
+            setValue={setRaca}
+            placeholder="Raça"
+            containerStyle={[styles.pickerContainer, { zIndex: 3 }]}
+            style={styles.picker}
+          />
+        )}
 
-      <DropDownPicker
-        open={openSexo}
-        setOpen={setOpenSexo}
-        items={[{ label: 'Macho', value: 'Macho' }, { label: 'Fêmea', value: 'Fêmea' }]}
-        value={sexo}
-        setValue={setSexo}
-        placeholder="Sexo"
-        containerStyle={styles.pickerContainer}
-        style={styles.picker}
-      />
+        <DropDownPicker
+          open={openPorte}
+          setOpen={setOpenPorte}
+          items={[
+            { label: 'Pequeno', value: 'Pequeno' },
+            { label: 'Médio', value: 'Médio' },
+            { label: 'Grande', value: 'Grande' },
+          ]}
+          value={porte}
+          setValue={setPorte}
+          placeholder="Porte"
+          containerStyle={[styles.pickerContainer, { zIndex: 2 }]}
+          style={styles.picker}
+        />
 
-      <CustomTextInput placeholder="Comportamento" value={comportamento} onChangeText={setComportamento} />
-      <CustomTextInput placeholder="Cidade" value={cidade} onChangeText={setCidade} />
-      <CustomTextInput placeholder="Rua" value={rua} onChangeText={setRua} />
+        <DropDownPicker
+          open={openSexo}
+          setOpen={setOpenSexo}
+          items={[
+            { label: 'Macho', value: 'Macho' },
+            { label: 'Fêmea', value: 'Fêmea' },
+          ]}
+          value={sexo}
+          setValue={setSexo}
+          placeholder="Sexo"
+          containerStyle={[styles.pickerContainer, { zIndex: 1 }]}
+          style={styles.picker}
+        />
 
-      <TouchableOpacity style={styles.button} onPress={RegistraPet} disabled={loading}>
-        {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Cadastrar</Text>}
-      </TouchableOpacity>
-    </ScrollView>
+        <CustomTextInput placeholder="Comportamento" value={comportamento} onChangeText={setComportamento} />
+        <CustomTextInput placeholder="Cidade" value={cidade} onChangeText={setCidade} />
+        <CustomTextInput placeholder="Rua" value={rua} onChangeText={setRua} />
+
+        <TouchableOpacity style={styles.button} onPress={RegistraPet} disabled={loading}>
+          {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Cadastrar</Text>}
+        </TouchableOpacity>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     padding: 16,
     alignItems: 'center',
     backgroundColor: '#fff',

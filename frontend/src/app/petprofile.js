@@ -15,7 +15,7 @@ const ProfilePet = () => {
   const [isLiked, setIsLiked] = useState(false);
   const [isFavorited, setIsFavorited] = useState(false);
 
-  // Obter o ID do usuário
+
   useEffect(() => {
     const fetchUserId = async () => {
       const id = await getUserId();
@@ -25,7 +25,7 @@ const ProfilePet = () => {
     fetchUserId();
   }, []);
 
-  // Carregar os dados do pet
+
   useEffect(() => {
     const fetchPetData = async () => {
       try {
@@ -49,7 +49,6 @@ const ProfilePet = () => {
     fetchPetData();
   }, []);
 
-  // Verificar se o pet foi favoritado e curtido (apenas quando idUsuario e pet estão disponíveis)
   useEffect(() => {
     if (idUsuario && pet?.ID_Animal) {
       console.log('Chamando checkIfFavorited e checkIfLiked com:', {
@@ -211,17 +210,15 @@ const ProfilePet = () => {
   return (
     <View style={styles.container}>
       <View style={styles.carouselContainer}>
-        <Carousel
-          loop
-          width={width * 0.8}
-          height={200}
-          autoPlay={true}
-          data={pet.imagens}
-          renderItem={({ item }) => (
-            <Image source={{ uri: item }} style={styles.petImage} />
-          )}
-          style={styles.carousel}
-        />
+      <Image
+        source={
+            pet.Foto_URL 
+                ? { uri: pet.Foto_URL } 
+                : require('../../assets/pets.png') 
+        }
+        style={styles.petImage}
+    />
+
       </View>
       <View style={styles.infoContainer}>
         <Text style={styles.petName}>{`${pet.Nome}, ${pet.Idade}`}</Text>
@@ -250,18 +247,22 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+    paddingTop: 30, 
   },
   carouselContainer: {
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: 20, 
   },
   petImage: {
-    width: width * 0.8,
-    height: 200,
+    width: '90%', 
+    height: undefined, 
+    aspectRatio: 4 / 4,
     borderRadius: 10,
+    resizeMode: 'cover', 
   },
   infoContainer: {
     padding: 16,
+    marginTop: 20, 
   },
   petName: {
     fontSize: 24,
@@ -270,6 +271,7 @@ const styles = StyleSheet.create({
   petDetail: {
     fontSize: 16,
     marginVertical: 2,
+  
   },
   navigationContainer: {
     flexDirection: 'row',
@@ -277,6 +279,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
 });
+
 
 export default ProfilePet;
 
