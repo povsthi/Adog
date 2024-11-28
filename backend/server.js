@@ -585,7 +585,52 @@ app.get('/notificacoes/:idUsuario', (req, res) => {
         },
     });
 });
+// Endpoint para filtrar pets
+app.get('/pets/filter', (req, res) => {
+    
+    const { tipo, raca, nome, sexo, idade, porte, cidade, rua } = req.query;
 
+    
+    let query = 'SELECT * FROM Pet WHERE 1=1';
+    const params = [];
+
+    
+    if (tipo) {
+        query += ' AND Tipo = ?';
+        params.push(tipo);
+    }
+    if (raca) {
+        query += ' AND Raca = ?';
+        params.push(raca);
+    }
+    if (nome) {
+        query += ' AND Nome LIKE ?';  
+        params.push(`%${nome}%`);
+    }
+    if (sexo) {
+        query += ' AND Sexo = ?';
+        params.push(sexo);
+    }
+    if (idade) {
+        query += ' AND Idade = ?';
+        params.push(idade);
+    }
+    if (porte) {
+        query += ' AND Porte = ?';
+        params.push(porte);
+    }
+    if (cidade) {
+        query += ' AND Cidade = ?';
+        params.push(cidade);
+    }
+    if (rua) {
+        query += ' AND Rua LIKE ?';  
+        params.push(`%${rua}%`);
+    }
+
+    
+    execSQLQuery(query, params, res);
+});
 app.listen(port, () => {
     console.log(`App escutando na porta ${port}`);
 });
