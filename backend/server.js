@@ -121,7 +121,7 @@ app.put('/usuarios/:idUsuario', (req, res) => {
     const query = `
         UPDATE Usuario 
         SET Email = ?, Senha = ?, Nome = ?, Tipo = ?, Foto = ?, Data_nascimento = ?, Morada = ?, Latitude = ?, Longitude = ?, Usuario_TIPO = ?
-        WHERE idUsuario = ?
+        WHERE ID = ?
     `;
 
     const params = [email, senha, nome, tipo, foto, data_nascimento, morada, latitude, longitude, usuario_tipo, idUsuario];
@@ -356,7 +356,6 @@ app.post('/likes/check', (req, res) => {
     });
 });
 
-
 app.get('/likes', (req, res) => {
     const id = [];
     execSQLQuery("SELECT * from Adota_Like", id, res);
@@ -389,34 +388,25 @@ app.delete('/unlike', async (req, res) => {
     }
   });
   
+app.put('/match/:idAdota', (req, res) => {
+    const { idAdota } = req.params;
 
-const checkForMatch = (idUsuario, idPet, res) => {
-    console.log(`Verificando se há match entre o usuário ${idUsuario} e o pet ${idPet}`);
-    
-    const query = `
-        SELECT * FROM Adota_Like 
-        WHERE FK_Usuario_ID = ? AND FK_Pet_ID_Animal = ?
+    const updateMatchQuery = `
+        UPDATE Adota_Like
+        SET DataMatch = CURRENT_TIMESTAMP
+        WHERE IDAdota = ? AND DataMatch IS NULL
     `;
-    
-    execSQLQuery(query, [idPet, idUsuario], (result) => {
-        if (result.length > 0) {
-            console.log('Match encontrado!');
 
-            const matchQuery = `
-                UPDATE Adota_Like
-                SET DataMatch = ?
-                WHERE FK_Usuario_ID = ? AND FK_Pet_ID_Animal = ?
-            `;
-
-            const matchParams = [new Date(), idUsuario, idPet];
-            execSQLQuery(matchQuery, matchParams, (matchResult) => {
-                res.json({ message: "Match encontrado!", match: true });
-            });
-        } else {
-            res.json({ message: "Like registrado, mas sem match ainda.", match: false });
-        }
+    execSQLQuery(updateMatchQuery, [idAdota], {
+        json: () => {
+            res.status(200).json({ message: 'Match registrado com sucesso!' });
+        },
+        status: (errorCode, errorMessage) => {
+            console.error('Erro ao registrar match:', errorMessage);
+            res.status(errorCode).json({ error: 'Erro ao registrar o match.' });
+        },
     });
-};
+});
 
 app.get('/matchs/:id', (req, res) => {
     const id = req.params.id;
@@ -585,7 +575,7 @@ app.get('/notificacoes/:idUsuario', (req, res) => {
         },
     });
 });
-// Endpoint para filtrar pets
+
 app.get('/pets/filter', (req, res) => {
     
     const { tipo, raca, nome, sexo, idade, porte, cidade, rua } = req.query;

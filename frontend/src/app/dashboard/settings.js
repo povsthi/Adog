@@ -18,6 +18,7 @@ const SettingsScreen = ({ navigation }) => {
     const [idUsuario, setIdUsuario] = useState();
     const [modalVisible, setModalVisible] = useState(false); 
     const [fotoUrl, setFotoUrl] = useState('');
+    const [foto, setFoto] = useState('');
 
     const router = useRouter();
 
@@ -101,6 +102,7 @@ const SettingsScreen = ({ navigation }) => {
             });
             let json = await response.json();
             navigation.goBack();
+            setModalVisible(false);
         } catch (err) {
             console.log("Erro ao atualizar usuário:", err);
         }

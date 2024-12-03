@@ -4,57 +4,48 @@ import NotCard from '../components/NotCard';
 import ipConf from './ipconfig';
 import { getUserId } from './storage';
 
-const Notification = ({ route }) => {
-  const [notificacoes, setNotificacoes] = useState([]);
-  const [carregando, setCarregando] = useState(true);
-  const [erro, setErro] = useState(null);
-  const [idUsuario, setIdUsuario] = useState('');
+const Notification = () => {
+  const [notificacoes, setNotificacoes] = useState([]); 
+  const [carregando, setCarregando] = useState(true); 
+  const [erro, setErro] = useState(null); 
 
-  const readId = async () => {
-    const idUsuario = await getUserId(); 
-    setIdUsuario(idUsuario);
-    console.log("id:" + idUsuario);
-};
+  const carregarNotificacoes = async () => {
+    try {
+      setCarregando(true); 
+      const idUsuario = await getUserId();
 
-  useEffect(() => {
-    readId(); 
-  }, []);
-
-  useEffect(() => {
-    const buscarNotificacoes = async () => {
-      try {
-        const response = await fetch(`${ipConf()}/notificacoes/${idUsuario}`, {
-          method: 'GET',
-        });
-
-        if (!response.ok) {
-          throw new Error('Erro ao buscar notificações');
-        }
-
-        const data = await response.json();
-        setNotificacoes(data.notificacoes || []); 
-      } catch (error) {
-        console.error('Erro ao buscar notificações:', error);
-        setErro('Não foi possível carregar as notificações.');
-      } finally {
-        setCarregando(false);
+      if (!idUsuario) {
+        throw new Error('ID do usuário não encontrado');
       }
-    };
 
-    buscarNotificacoes();
-  }, [idUsuario]);
+      const response = await fetch(`${ipConf()}/notificacoes/${idUsuario}`, {
+        method: 'GET',
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro ao buscar notificações');
+      }
+
+      const data = await response.json();
+      setNotificacoes(data.notificacoes || []); 
+    } catch (error) {
+      console.error('Erro ao carregar notificações:', error);
+      setErro('Não foi possível carregar as notificações.');
+    } finally {
+      setCarregando(false); 
+    }
+  };
 
   const marcarComoLido = async (idAdota) => {
     try {
       const response = await fetch(`${ipConf()}/notificacaolida/${idAdota}`, {
-        method: 'PUT', 
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
       });
 
       if (!response.ok) {
         throw new Error('Erro ao marcar notificação como lida');
       }
-
 
       setNotificacoes((prevNotificacoes) =>
         prevNotificacoes.map((notificacao) =>
@@ -67,6 +58,32 @@ const Notification = ({ route }) => {
       console.error('Erro ao marcar notificação como lida:', error);
     }
   };
+
+  const retribuirInteresse = async (idAdota) => {
+    try {
+      const response = await fetch(`${ipConf()}/match/${idAdota}`, {
+        method: 'PUT',
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro ao registrar o match');
+      }
+
+      setNotificacoes((prev) =>
+        prev.map((notificacao) =>
+          notificacao.IDAdota === idAdota
+            ? { ...notificacao, Match: true, DataMatch: new Date().toISOString() }
+            : notificacao
+        )
+      );
+    } catch (error) {
+      console.error('Erro ao retribuir interesse:', error);
+    }
+  };
+
+  useEffect(() => {
+    carregarNotificacoes();
+  }, []);
 
   if (carregando) {
     return (
@@ -89,7 +106,11 @@ const Notification = ({ route }) => {
       <FlatList
         data={notificacoes}
         renderItem={({ item }) => (
-          <NotCard notificacao={item} marcarComoLido={marcarComoLido} />
+          <NotCard
+            notificacao={item}
+            marcarComoLido={marcarComoLido}
+            retribuirInteresse={retribuirInteresse}
+          />
         )}
         keyExtractor={(item) => item.IDAdota.toString()}
         ListEmptyComponent={
@@ -123,5 +144,7 @@ const styles = StyleSheet.create({
 });
 
 export default Notification;
+
+
 
 

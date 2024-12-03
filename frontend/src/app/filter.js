@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Picker, Button, TouchableOpacity, StyleSheet, Image } from 'react-native';
 
-const SearchScreen = () => {
+const Filter = () => {
   const [animalType, setAnimalType] = useState('cachorro');
   const [petSex, setPetSex] = useState('Macho');
   const [breed, setBreed] = useState('');
