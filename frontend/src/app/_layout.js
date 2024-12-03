@@ -71,6 +71,9 @@ export default function Layout() {
       <Stack.Screen 
         name="veterinarians" 
       />
+      <Stack.Screen 
+        name="userprofile" 
+      />
     </Stack>
 
   );

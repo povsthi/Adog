@@ -3,6 +3,7 @@ import { View, FlatList, ActivityIndicator, StyleSheet, Text } from 'react-nativ
 import NotCard from '../components/NotCard';
 import ipConf from './ipconfig';
 import { getUserId } from './storage';
+import { useFocusEffect } from '@react-navigation/native';
 
 const Notification = () => {
   const [notificacoes, setNotificacoes] = useState([]); 
@@ -84,6 +85,12 @@ const Notification = () => {
   useEffect(() => {
     carregarNotificacoes();
   }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      carregarNotificacoes();
+    }, [])
+  );
 
   if (carregando) {
     return (

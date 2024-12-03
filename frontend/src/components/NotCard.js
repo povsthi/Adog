@@ -1,21 +1,49 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import { Link, useRouter } from 'expo-router';
+import ipConf from './ipconfig';
 
 const NotCard = ({ notificacao, marcarComoLido, retribuirInteresse }) => {
   const { UsuarioQueCurtiu, NomePet, Lida, IDAdota, Match } = notificacao;
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  const handleRedirect = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(`${ipConf()}/likes/${IDAdota}`);
+      if (!response.ok) {
+        throw new Error('Erro ao buscar o perfil do usuário interessado.');
+      }
+      const data = await response.json();
+      const usuarioId = data[0]?.FK_Usuario_ID;
+      if (!usuarioId) {
+        throw new Error('ID do usuário interessado não encontrado.');
+      }
+      router.push(`/userprofile/${usuarioId}`); // Redireciona para o perfil
+    } catch (error) {
+      Alert.alert('Erro', error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <View style={[styles.card, Lida ? styles.lido : styles.naoLido]}>
       <Text style={styles.message}>
-        {`${UsuarioQueCurtiu} se interessou pelo seu pet ${NomePet}.`}
+        <TouchableOpacity onPress={handleRedirect}>
+          {loading ? (
+            <ActivityIndicator size="small" color="#212A75" />
+          ) : (
+            <Text style={styles.userLink}>{UsuarioQueCurtiu}</Text>
+          )}
+        </TouchableOpacity>
+        {' '}se interessou pelo seu pet {NomePet}.
       </Text>
 
       <View style={styles.buttons}>
         {!Lida && (
-          <TouchableOpacity
-            style={styles.botao}
-            onPress={() => marcarComoLido(IDAdota)}
-          >
+          <TouchableOpacity style={styles.botao} onPress={() => marcarComoLido(IDAdota)}>
             <Text style={styles.botaoTexto}>Marcar como lida</Text>
           </TouchableOpacity>
         )}
@@ -36,6 +64,11 @@ const NotCard = ({ notificacao, marcarComoLido, retribuirInteresse }) => {
 };
 
 const styles = StyleSheet.create({
+  userLink: {
+    color: '#212A75',
+    fontWeight: 'bold',
+    textDecorationLine: 'underline',
+  },
   card: {
     backgroundColor: '#f9f9f9',
     borderRadius: 8,
@@ -92,5 +125,6 @@ const styles = StyleSheet.create({
 });
 
 export default NotCard;
+
 
 

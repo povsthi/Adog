@@ -334,8 +334,7 @@ app.post('/likes', (req, res) => {
         },
     });
 });
-
-  
+ 
 app.post('/likes/check', (req, res) => {
     const { idUsuario, idPet } = req.body;
 
@@ -359,6 +358,18 @@ app.post('/likes/check', (req, res) => {
 app.get('/likes', (req, res) => {
     const id = [];
     execSQLQuery("SELECT * from Adota_Like", id, res);
+});
+
+app.get('/likes/:idAdota', (req, res) => {
+    const id = req.params.idAdota; 
+    console.log(`Buscando like pelo ID ${id}`);
+
+    const query = `
+        SELECT FK_Usuario_ID FROM Adota_Like
+        WHERE IDAdota = ?
+    `;
+
+    execSQLQuery(query, [id], res);
 });
 
 app.delete('/unlike', async (req, res) => {
