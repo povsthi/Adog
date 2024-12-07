@@ -5,6 +5,7 @@ import { Feather, Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { getData, getUserId } from './storage';
 import ipConf from './ipconfig';
+import { useRouter } from 'expo-router';
 
 const { width } = Dimensions.get('window');
 
@@ -14,7 +15,7 @@ const ProfilePet = () => {
   const [idUsuario, setIdUsuario] = useState(null);
   const [isLiked, setIsLiked] = useState(false);
   const [isFavorited, setIsFavorited] = useState(false);
-
+  const [router] = useRouter();
 
   useEffect(() => {
     const fetchUserId = async () => {
@@ -24,7 +25,6 @@ const ProfilePet = () => {
     };
     fetchUserId();
   }, []);
-
 
   useEffect(() => {
     const fetchPetData = async () => {
@@ -62,6 +62,13 @@ const ProfilePet = () => {
     }
   }, [idUsuario, pet]);
 
+  useEffect(() => {
+    if (pet?.FK_Usuario_ID) {
+      console.log("Dono do pet:", pet.FK_Usuario_ID);
+      console.log("ID do usuário atual:", idUsuario);
+    }
+  }, [pet, idUsuario]);
+  
   const checkIfFavorited = async (petId) => {
     try {
       const response = await fetch(`${ipConf()}/favoritas/check`, {
@@ -205,6 +212,41 @@ const ProfilePet = () => {
     navigation.goBack();
   };
 
+  const handleDeletePet = async () => {
+    Alert.alert(
+      'Excluir Pet',
+      'Tem certeza que deseja excluir este pet?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Excluir',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const response = await fetch(`${ipConf()}/pets/${pet.ID_Animal}`, {
+                method: 'DELETE',
+              });
+
+              if (response.ok) {
+                Alert.alert('Sucesso', 'Pet excluído com sucesso.');
+                navigation.goBack();
+              } else {
+                Alert.alert('Erro', 'Não foi possível excluir o pet.');
+              }
+            } catch (error) {
+              console.error('Erro ao excluir o pet:', error);
+              Alert.alert('Erro', 'Não foi possível excluir o pet.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleEditPet = () => {
+    router.push(`/editpet/$pet.ID_Animal`) 
+  };
+
   if (!pet) return <Text>Carregando...</Text>;
 
   return (
@@ -224,21 +266,37 @@ const ProfilePet = () => {
         <Text style={styles.petName}>{`${pet.Nome}, ${pet.Idade}`}</Text>
         <Text style={styles.petDetail}>• Porte {pet.Porte}</Text>
         <Text style={styles.petDetail}>• {pet.Raca}</Text>
-        <Text style={styles.petDetail}>• {pet.Sexo ? 'Masculino' : 'Feminino'}</Text>
+        <Text style={styles.petDetail}>• {pet.Sexo ? 'Macho' : 'Fêmea'}</Text>
         <Text style={styles.petDetail}>• Residente de {pet.Cidade}</Text>
         <Text style={styles.petDetail}>• {pet.Comportamento}</Text>
       </View>
       <View style={styles.navigationContainer}>
-        <TouchableOpacity onPress={handleLike}>
-          <Ionicons name={isLiked ? 'heart' : 'heart-outline'} size={32} color="#212A75" />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={isFavorited ? handleDesfavoritar : handleFavorite}>
-          <Ionicons name={isFavorited ? 'star' : 'star-outline'} size={32} color="#212A75" />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={handleBack}>
-          <Feather name="x" size={32} color="#212A75" />
-        </TouchableOpacity>
-      </View>
+       {Number(idUsuario) === Number(pet.FK_Usuario_ID) ? (
+          <>
+            <TouchableOpacity onPress={handleEditPet}>
+              <Feather name="edit" size={32} color="#212A75" />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleDeletePet}>
+              <Feather name="trash" size={32} color="#212A75" />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleBack}>
+              <Feather name="x" size={32} color="#212A75" />
+            </TouchableOpacity>
+          </>
+        ) : (
+          <>
+            <TouchableOpacity onPress={handleLike}>
+              <Ionicons name={isLiked ? 'heart' : 'heart-outline'} size={32} color="#212A75" />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={isFavorited ? handleDesfavoritar : handleFavorite}>
+              <Ionicons name={isFavorited ? 'star' : 'star-outline'} size={32} color="#212A75" />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleBack}>
+              <Feather name="x" size={32} color="#212A75" />
+            </TouchableOpacity>
+          </>
+        )}
+        </View>
     </View>
   );
 };
@@ -279,7 +337,6 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
 });
-
 
 export default ProfilePet;
 

@@ -28,7 +28,7 @@ export default function Layout() {
           backgroundColor: '#212A75',
         },
         headerTintColor: '#FFF',
-        headerBackTitleVisible: false, 
+        headerBackTitleVisible: false,
       }}
     >
       <Stack.Screen 
@@ -52,6 +52,7 @@ export default function Layout() {
       <Stack.Screen 
         name="dashboard" 
         options={{
+          headerBackVisible: false,
           headerRight: () => ( 
             <TouchableOpacity onPress={handleNotificationPress} style={{ marginRight: 10 }}>
               <Ionicons name="notifications-outline" size={24} color="#FFF" />
@@ -63,17 +64,23 @@ export default function Layout() {
         name="petprofile" 
       />
       <Stack.Screen 
-        name="notifications" 
+        name="notfications" 
       />
       <Stack.Screen 
         name="addanounce" 
+        options={{
+          headerBackTitleVisible: false,
+        }}
       />
       <Stack.Screen 
         name="veterinarians" 
       />
       <Stack.Screen 
-        name="userprofile" 
+        name="userprofile/[id]" 
       />
+      <Stack.Screen
+       name="editpet/[id]"
+       />
     </Stack>
 
   );

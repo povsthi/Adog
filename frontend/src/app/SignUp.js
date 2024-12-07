@@ -132,15 +132,18 @@ const SignUp = () => {
     }
 
     const userObj = {
-        nome,
-        email,
-        senha,
-        moradia,
-        latitude: location.latitude,
-        longitude: location.longitude,
-        foto: fotoUrl,
-        tipo: "comum", 
+      nome,                  
+      email,                
+      senha,                 
+      tipo: 'comum',         
+      foto: fotoUrl,         
+      data_nascimento: data, 
+      morada: moradia,       
+      latitude: location.latitude, 
+      longitude: location.longitude, 
+      usuario_tipo: 'usuário', 
     };
+    
 
     try {
         const response = await fetch(`${ipConf()}/usuarios`, {
@@ -159,7 +162,7 @@ const SignUp = () => {
             await storeUserId(json.id.toString());
             router.replace('/dashboard');
         } else {
-            Alert.alert('Erro', 'ID não foi retornado corretamente.');
+          router.replace('/dashboard');
         }
     } catch (err) {
         console.error('Erro no cadastro:', err);

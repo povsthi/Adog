@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { Link, useRouter } from 'expo-router';
-import ipConf from './ipconfig';
+import ipConf from '../app/ipconfig';
 
 const NotCard = ({ notificacao, marcarComoLido, retribuirInteresse }) => {
   const { UsuarioQueCurtiu, NomePet, Lida, IDAdota, Match } = notificacao;
@@ -20,7 +20,7 @@ const NotCard = ({ notificacao, marcarComoLido, retribuirInteresse }) => {
       if (!usuarioId) {
         throw new Error('ID do usuário interessado não encontrado.');
       }
-      router.push(`/userprofile/${usuarioId}`); // Redireciona para o perfil
+      router.push(`/userprofile/${usuarioId}`); 
     } catch (error) {
       Alert.alert('Erro', error.message);
     } finally {

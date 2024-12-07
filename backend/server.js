@@ -68,7 +68,7 @@ app.get('/', (req, res) => {
 
 /*********************************endpoints para cadastro, visualização e edição de usuário********************************* */
 
-app.get('/usuarios', middlewareValidarJWT, (req, res) => {
+app.get('/usuarios', (req, res) => {
     const id = [];
     execSQLQuery("SELECT * from Usuario", id, res);
 });
@@ -188,7 +188,7 @@ app.post('/pets', async (req, res) => {
     });
   });
 
-  app.get('/pets', (req, res) => {
+app.get('/pets', (req, res) => {
     const id = [];
     execSQLQuery("SELECT * from Pet", id, res);
 });
@@ -203,7 +203,7 @@ app.get('/pets/usuario/:idUsuario', (req, res) => {
     execSQLQuery(`SELECT * FROM Pet WHERE FK_Usuario_ID = ?`, [idUsuario], res); 
   });  
  
-  app.put('/pets/:id', (req, res) => {
+app.put('/pets/:id', (req, res) => {
     console.log('Recebendo requisição PUT em /pets/:id');
   
     const petId = req.params.id;
