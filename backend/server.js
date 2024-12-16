@@ -10,7 +10,9 @@ const port = 8080;
 app.use(express.static("public"));
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 const jwt = require("jsonwebtoken"); 
+const expressListEndpoints = require('express-list-endpoints');
 const privateKey = "xxxyyyzzz123";
 
 const middlewareValidarJWT = (req, res, next) => {
@@ -81,20 +83,20 @@ app.get('/usuarios/:id', (req, res) => {
 app.post('/usuarios', (req, res) => {
     console.log('Recebendo requisição POST em /usuarios');
 
-    const { email, senha, nome, tipo, foto, data_nascimento, morada, latitude, longitude, usuario_tipo } = req.body;
+    const { email, senha, nome, tipo, foto, data_nascimento, telefone, morada, latitude, longitude, usuario_tipo } = req.body;
     console.log('Dados recebidos:', req.body);
 
-    if (!email || !senha || !nome || !tipo || !foto || !data_nascimento || !morada || !latitude || !longitude || !usuario_tipo) {
+    if (!email || !senha || !nome || !tipo || !foto || !data_nascimento || !telefone || !morada || !latitude || !longitude || !usuario_tipo) {
         return res.status(400).json({ 
             error: 'Todos os campos são obrigatórios!', 
-            missing: { email, senha, nome, tipo, foto, data_nascimento, morada, latitude, longitude, usuario_tipo }
+            missing: { email, senha, nome, tipo, foto, data_nascimento, telefone, morada, latitude, longitude, usuario_tipo }
         });
     }
 
-    const userData = [email, senha, nome, tipo, foto, data_nascimento, morada, latitude, longitude, usuario_tipo];
+    const userData = [email, senha, nome, tipo, foto, data_nascimento, telefone, morada, latitude, longitude, usuario_tipo];
     const query = `
-        INSERT INTO Usuario (Email, Senha, Nome, Tipo, Foto, Data_nascimento, Morada, Latitude, Longitude, Usuario_TIPO)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO Usuario (Email, Senha, Nome, Tipo, Foto, Data_nascimento, Telefone, Morada, Latitude, Longitude, Usuario_TIPO)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     const connection = mysql.createConnection(db);
@@ -116,15 +118,15 @@ app.post('/usuarios', (req, res) => {
 
 app.put('/usuarios/:idUsuario', (req, res) => {
     const idUsuario = req.params.idUsuario; 
-    const { email, senha, nome, cpf, tipo, foto, data_nascimento, morada, latitude, longitude, usuario_tipo } = req.body;
+    const { email, senha, nome, tipo, foto, data_nascimento, telefone, morada, latitude, longitude, usuario_tipo } = req.body;
 
     const query = `
         UPDATE Usuario 
-        SET Email = ?, Senha = ?, Nome = ?, Tipo = ?, Foto = ?, Data_nascimento = ?, Morada = ?, Latitude = ?, Longitude = ?, Usuario_TIPO = ?
+        SET Email = ?, Senha = ?, Nome = ?, Tipo = ?, Foto = ?, Data_nascimento = ?, Telefone = ?, Morada = ?, Latitude = ?, Longitude = ?, Usuario_TIPO = ?
         WHERE ID = ?
     `;
 
-    const params = [email, senha, nome, tipo, foto, data_nascimento, morada, latitude, longitude, usuario_tipo, idUsuario];
+    const params = [email, senha, nome, tipo, foto, data_nascimento, morada, telefone, latitude, longitude, usuario_tipo, idUsuario];
     execSQLQuery(query, params, res);
 });
 
@@ -202,7 +204,33 @@ app.get('/pets/usuario/:idUsuario', (req, res) => {
     const idUsuario = req.params.idUsuario; 
     execSQLQuery(`SELECT * FROM Pet WHERE FK_Usuario_ID = ?`, [idUsuario], res); 
   });  
- 
+
+app.get('/pets/search', async (req, res) => {
+    try {
+        console.log("Requisição recebida em /pets/search");
+        console.log("Parâmetros da requisição:", req.query);
+
+        const { nome } = req.query;
+        if (!nome) {
+            return res.status(400).json({ error: 'O parâmetro "nome" é obrigatório.' });
+        }
+
+        const searchTerm = `%${nome.trim().toLowerCase()}%`;
+        console.log("Valor de pesquisa:", searchTerm);
+
+        const connection = await mysql.createConnection(db);
+        const [results] = await connection.promise().query(
+            'SELECT * FROM Pet WHERE LOWER(Nome) LIKE ?',
+            [searchTerm]
+        );
+        console.log("Resultados:", results);
+        res.json(results);
+    } catch (error) {
+        console.error("Erro ao executar a consulta:", error);
+        res.status(500).json({ error: 'Erro interno no servidor', detalhes: error.message });
+    }
+});
+
 app.put('/pets/:id', (req, res) => {
     console.log('Recebendo requisição PUT em /pets/:id');
   
@@ -408,16 +436,62 @@ app.put('/match/:idAdota', (req, res) => {
         WHERE IDAdota = ? AND DataMatch IS NULL
     `;
 
+    const fetchUserInfoQuery = `
+        SELECT 
+            dono.Nome AS NomeDono, dono.Telefone AS TelefoneDono,
+            interessado.Nome AS NomeInteressado, interessado.Telefone AS TelefoneInteressado
+        FROM 
+            Adota_Like al
+        JOIN 
+            Pet p ON al.FK_Pet_ID_Animal = p.ID_Animal
+        JOIN 
+            Usuario dono ON p.FK_Usuario_ID = dono.ID
+        JOIN 
+            Usuario interessado ON al.FK_Usuario_ID = interessado.ID
+        WHERE 
+            al.IDAdota = ?
+    `;
+
     execSQLQuery(updateMatchQuery, [idAdota], {
         json: () => {
-            res.status(200).json({ message: 'Match registrado com sucesso!' });
+            execSQLQuery(fetchUserInfoQuery, [idAdota], {
+                json: (results) => {
+                    if (results.length === 0) {
+                        return res.status(404).json({ error: 'Match ou usuários não encontrados.' });
+                    }
+
+                    const { 
+                        NomeDono, TelefoneDono, 
+                        NomeInteressado, TelefoneInteressado 
+                    } = results[0];
+
+                    res.status(200).json({
+                        message: 'Match registrado com sucesso!',
+                        notificacoes: [
+                            { 
+                                usuario: 'Dono do Pet',
+                                mensagem: `✨ Match realizado! ${NomeInteressado} está interessado no seu pet. Telefone: ${TelefoneInteressado}`
+                            },
+                            { 
+                                usuario: 'Interessado',
+                                mensagem: `✨ Match realizado! ${NomeDono} retribuiu o interesse. Telefone: ${TelefoneDono}`
+                            }
+                        ]
+                    });
+                },
+                status: (errorCode, errorMessage) => {
+                    console.error('Erro ao buscar informações dos usuários:', errorMessage);
+                    res.status(errorCode).json({ error: 'Erro ao buscar informações dos usuários.' });
+                }
+            });
         },
         status: (errorCode, errorMessage) => {
-            console.error('Erro ao registrar match:', errorMessage);
+            console.error('Erro ao registrar o match:', errorMessage);
             res.status(errorCode).json({ error: 'Erro ao registrar o match.' });
-        },
+        }
     });
 });
+
 
 app.get('/matchs/:id', (req, res) => {
     const id = req.params.id;
@@ -632,8 +706,11 @@ app.get('/pets/filter', (req, res) => {
     
     execSQLQuery(query, params, res);
 });
+
 app.listen(port, () => {
     console.log(`App escutando na porta ${port}`);
+    console.log('Rotas do servidor:');
+    console.log(expressListEndpoints(app));
 });
 
 

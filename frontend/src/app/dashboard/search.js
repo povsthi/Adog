@@ -3,12 +3,14 @@ import { View, TextInput, Text, StyleSheet, ScrollView, ActivityIndicator, Alert
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import PetCard from '../../components/PetCard';
 import ipConf from '../ipconfig';
+import { useRouter } from 'expo-router';
 
-const SearchPets = () => {
+const SearchPets = ({ navigation }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [pets, setPets] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isFocused, setIsFocused] = useState(false); 
+  const router = useRouter();
 
   const handleSearch = async () => {
     if (!searchTerm.trim()) {
@@ -18,7 +20,7 @@ const SearchPets = () => {
 
     try {
       setLoading(true);
-      const response = await fetch(`${ipConf()}/pets?nome=${searchTerm}`);
+      const response = await fetch(`${ipConf()}/pets/search?nome=${encodeURIComponent(searchTerm)}`);
       if (response.ok) {
         const data = await response.json();
         setPets(data);
@@ -38,7 +40,7 @@ const SearchPets = () => {
       <View
         style={[
           styles.searchContainer,
-          { borderColor: isFocused ? '#4CAF50' : '#ccc' }, 
+          { borderColor: isFocused ? '#212A75' : '#ccc' },
         ]}
       >
         <Ionicons name="search" size={20} color="#ccc" style={styles.searchIcon} />
@@ -53,9 +55,16 @@ const SearchPets = () => {
           onFocus={() => setIsFocused(true)} 
           onBlur={() => setIsFocused(false)}  
         />
+        <Ionicons
+          name="filter-outline"
+          size={24}
+          color="#212A75"
+          style={styles.filterIcon}
+          onPress={() => router.replace('/filter')} 
+        />
       </View>
       {loading ? (
-        <ActivityIndicator size="large" color="#0000ff" />
+        <ActivityIndicator size="large" color="#212A75" />
       ) : pets.length > 0 ? (
         <ScrollView style={styles.resultsContainer}>
           {pets.map((pet) => (
@@ -97,7 +106,11 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 40,
     paddingLeft: 30, 
-    color: '#000',
+    color: '#212A75',
+  },
+  filterIcon: {
+    marginLeft: 10,
+    zIndex: 1,
   },
   resultsContainer: {
     marginTop: 10,

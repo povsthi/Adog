@@ -26,6 +26,7 @@ const SignUp = () => {
   const [senha, setSenha] = useState('');
   const [confirmarSenha, setConfirmarSenha] = useState('');
   const [moradia, setMoradia] = useState('');
+  const [telefone, setTelefone] = useState('');
   const [foto, setFoto] = useState(null); 
   const [fotoUrl, setFotoUrl] = useState(''); 
   const [showPassword, setShowPassword] = useState(false);
@@ -120,8 +121,23 @@ const SignUp = () => {
     return `${ano}-${mes}-${dia}`; 
   };
 
+  const formatarTelefone = (telefone) => {
+
+    const telefoneLimpo = telefone.replace(/\D/g, '');
+  
+    
+    if (telefoneLimpo.length === 11) {
+      return `(${telefoneLimpo.slice(0, 2)}) ${telefoneLimpo.slice(2, 7)}-${telefoneLimpo.slice(7)}`;
+    } else if (telefoneLimpo.length === 10) {
+      return `(${telefoneLimpo.slice(0, 2)}) ${telefoneLimpo.slice(2, 6)}-${telefoneLimpo.slice(6)}`;
+    } else {
+      return telefone; 
+    }
+  };
+  
+
   const Cadastrar = async () => {
-    if (!nome || !email || !senha || !confirmarSenha || !moradia || !fotoUrl) {
+    if (!nome || !email || !senha || !confirmarSenha || !moradia || !telefone || !fotoUrl) {
         Alert.alert('Erro', 'Todos os campos são obrigatórios!');
         return;
     }
@@ -145,10 +161,11 @@ const SignUp = () => {
       tipo: 'comum',         
       foto: fotoUrl,         
       data_nascimento: dataFormatada, 
-      morada: moradia,       
+      morada: moradia,  
+      telefone: telefone,     
       latitude: location.latitude, 
       longitude: location.longitude, 
-      usuario_tipo: 'usuário', 
+      usuario_tipo: 1, 
     };
     
     try {
@@ -210,6 +227,13 @@ const SignUp = () => {
           placeholder="DD/MM/AAAA"
           value={data} 
           onChangeText={text => setDataNascimento(formatData(text))} 
+          />
+
+        <Label text="Telefone" />
+          <CustomTextInput 
+          placeholder="(XX) X XXXX-XXXX"
+          value={telefone} 
+          onChangeText={text => setTelefone(formatarTelefone(text))} 
           />
 
           <Label text="Tipo de Moradia" />

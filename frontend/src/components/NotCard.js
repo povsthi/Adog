@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
-import { Link, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import ipConf from '../app/ipconfig';
 
 const NotCard = ({ notificacao, marcarComoLido, retribuirInteresse }) => {
-  const { UsuarioQueCurtiu, NomePet, Lida, IDAdota, Match } = notificacao;
+  const { UsuarioQueCurtiu, NomePet, Lida, IDAdota, DataMatch } = notificacao;
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -31,26 +31,24 @@ const NotCard = ({ notificacao, marcarComoLido, retribuirInteresse }) => {
   return (
     <View style={[styles.card, Lida ? styles.lido : styles.naoLido]}>
       <Text style={styles.message}>
-        <Text>
-          <TouchableOpacity onPress={handleRedirect}>
-            {loading ? (
-              <ActivityIndicator size="small" color="#212A75" />
-            ) : (
-              <Text style={styles.userLink}>{UsuarioQueCurtiu}</Text>
-            )}
-          </TouchableOpacity>
-        </Text>
+        <TouchableOpacity onPress={handleRedirect}>
+          {loading ? (
+            <ActivityIndicator size="small" color="#212A75" />
+          ) : (
+            <Text style={styles.userLink}>{UsuarioQueCurtiu}</Text>
+          )}
+        </TouchableOpacity>
         {' '}se interessou pelo seu pet <Text style={styles.petName}>{NomePet}</Text>.
       </Text>
-  
+
       <View style={styles.buttons}>
         {!Lida && (
           <TouchableOpacity style={styles.botao} onPress={() => marcarComoLido(IDAdota)}>
             <Text style={styles.botaoTexto}>Marcar como lida</Text>
           </TouchableOpacity>
         )}
-  
-        {!Match && (
+
+        {!DataMatch && (
           <TouchableOpacity
             style={[styles.botao, styles.botaoMatch]}
             onPress={() => retribuirInteresse(IDAdota)}
@@ -59,11 +57,12 @@ const NotCard = ({ notificacao, marcarComoLido, retribuirInteresse }) => {
           </TouchableOpacity>
         )}
       </View>
-  
-      {Match && <Text style={styles.matchMessage}>✨ Match realizado! ✨</Text>}
+
+      {DataMatch && (
+        <Text style={styles.matchMessage}>✨ Match realizado em {new Date(DataMatch).toLocaleDateString()}! ✨</Text>
+      )}
     </View>
   );
-  
 };
 
 const styles = StyleSheet.create({
@@ -128,6 +127,7 @@ const styles = StyleSheet.create({
 });
 
 export default NotCard;
+
 
 
 

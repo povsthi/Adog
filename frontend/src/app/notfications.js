@@ -48,13 +48,14 @@ const Notification = () => {
         throw new Error('Erro ao marcar notificação como lida');
       }
 
-      setNotificacoes((prevNotificacoes) =>
-        prevNotificacoes.map((notificacao) =>
+      setNotificacoes((prev) =>
+        prev.map((notificacao) =>
           notificacao.IDAdota === idAdota
-            ? { ...notificacao, Lida: true }
+            ? { ...notificacao, Match: true, DataMatch: new Date().toISOString() }
             : notificacao
         )
       );
+      
     } catch (error) {
       console.error('Erro ao marcar notificação como lida:', error);
     }
