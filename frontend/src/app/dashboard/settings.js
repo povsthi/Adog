@@ -101,7 +101,6 @@ const SettingsScreen = ({ navigation }) => {
                 body: jsonBody,
             });
             let json = await response.json();
-            navigation.goBack();
             setModalVisible(false);
         } catch (err) {
             console.log("Erro ao atualizar usuário:", err);

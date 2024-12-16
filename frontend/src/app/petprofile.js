@@ -15,7 +15,7 @@ const ProfilePet = () => {
   const [idUsuario, setIdUsuario] = useState(null);
   const [isLiked, setIsLiked] = useState(false);
   const [isFavorited, setIsFavorited] = useState(false);
-  const [router] = useRouter();
+  const router = useRouter();
 
   useEffect(() => {
     const fetchUserId = async () => {
@@ -244,8 +244,9 @@ const ProfilePet = () => {
   };
 
   const handleEditPet = () => {
-    router.push(`/editpet/$pet.ID_Animal`) 
+    router.push(`/editpet/${pet.ID_Animal}`); 
   };
+  
 
   if (!pet) return <Text>Carregando...</Text>;
 

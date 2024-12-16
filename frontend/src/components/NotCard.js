@@ -31,23 +31,25 @@ const NotCard = ({ notificacao, marcarComoLido, retribuirInteresse }) => {
   return (
     <View style={[styles.card, Lida ? styles.lido : styles.naoLido]}>
       <Text style={styles.message}>
-        <TouchableOpacity onPress={handleRedirect}>
-          {loading ? (
-            <ActivityIndicator size="small" color="#212A75" />
-          ) : (
-            <Text style={styles.userLink}>{UsuarioQueCurtiu}</Text>
-          )}
-        </TouchableOpacity>
-        {' '}se interessou pelo seu pet {NomePet}.
+        <Text>
+          <TouchableOpacity onPress={handleRedirect}>
+            {loading ? (
+              <ActivityIndicator size="small" color="#212A75" />
+            ) : (
+              <Text style={styles.userLink}>{UsuarioQueCurtiu}</Text>
+            )}
+          </TouchableOpacity>
+        </Text>
+        {' '}se interessou pelo seu pet <Text style={styles.petName}>{NomePet}</Text>.
       </Text>
-
+  
       <View style={styles.buttons}>
         {!Lida && (
           <TouchableOpacity style={styles.botao} onPress={() => marcarComoLido(IDAdota)}>
             <Text style={styles.botaoTexto}>Marcar como lida</Text>
           </TouchableOpacity>
         )}
-
+  
         {!Match && (
           <TouchableOpacity
             style={[styles.botao, styles.botaoMatch]}
@@ -57,10 +59,11 @@ const NotCard = ({ notificacao, marcarComoLido, retribuirInteresse }) => {
           </TouchableOpacity>
         )}
       </View>
-
+  
       {Match && <Text style={styles.matchMessage}>✨ Match realizado! ✨</Text>}
     </View>
   );
+  
 };
 
 const styles = StyleSheet.create({

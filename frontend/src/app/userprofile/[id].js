@@ -3,14 +3,12 @@ import { View, Text, Image, StyleSheet, ActivityIndicator, Alert } from 'react-n
 import { useLocalSearchParams } from 'expo-router';
 import ipConf from '../ipconfig';
 
-// Função para calcular a idade
 const calcularIdade = (dataNascimento) => {
   const hoje = new Date();
   const nascimento = new Date(dataNascimento);
 
   let idade = hoje.getFullYear() - nascimento.getFullYear();
 
-  // Ajusta a idade caso o aniversário ainda não tenha ocorrido neste ano
   const mesAtual = hoje.getMonth();
   const diaAtual = hoje.getDate();
   if (
@@ -107,7 +105,8 @@ const UserProfile = () => {
       </View>
       <View style={styles.infoContainer}>
         <Text style={styles.userName}>{`${user.Nome}, ${user.Idade}`}</Text>
-        <Text style={styles.userDetail}>• Vive em {user.Morada}</Text>
+        <Text style={styles.userDetail}>• Vive em: {user.Morada}</Text>
+        <Text style={styles.userDetail}>• E-mail de contato: {user.Email}</Text>
         <Text style={styles.userDetail}>• Residente de {user.Cidade}</Text>
       </View>
     </View>
@@ -126,6 +125,7 @@ const styles = StyleSheet.create({
     aspectRatio: 4 / 4,
     borderRadius: 10,
     resizeMode: 'cover',
+    justifyContent: 'center',
   },
   infoContainer: {
     padding: 16,

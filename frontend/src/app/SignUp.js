@@ -83,7 +83,6 @@ const SignUp = () => {
     return data;
   };
 
-
   const selecionarFoto = async () => {
     try {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -115,6 +114,12 @@ const SignUp = () => {
     }
   };
 
+  const formatarDataParaBanco = (data) => {
+    const partes = data.split('/'); 
+    const [dia, mes, ano] = partes; 
+    return `${ano}-${mes}-${dia}`; 
+  };
+
   const Cadastrar = async () => {
     if (!nome || !email || !senha || !confirmarSenha || !moradia || !fotoUrl) {
         Alert.alert('Erro', 'Todos os campos são obrigatórios!');
@@ -131,20 +136,21 @@ const SignUp = () => {
       return;
     }
 
+    const dataFormatada = formatarDataParaBanco(data);
+
     const userObj = {
       nome,                  
       email,                
       senha,                 
       tipo: 'comum',         
       foto: fotoUrl,         
-      data_nascimento: data, 
+      data_nascimento: dataFormatada, 
       morada: moradia,       
       latitude: location.latitude, 
       longitude: location.longitude, 
       usuario_tipo: 'usuário', 
     };
     
-
     try {
         const response = await fetch(`${ipConf()}/usuarios`, {
             method: 'POST',

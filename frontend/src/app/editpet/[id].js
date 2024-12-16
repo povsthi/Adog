@@ -2,19 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { ScrollView, KeyboardAvoidingView, TouchableOpacity, Text, StyleSheet, Image, Alert, ActivityIndicator, Platform } from 'react-native';
 import CustomTextInput from '../../components/CustomTextInput';
 import DropDownPicker from 'react-native-dropdown-picker';
-import { useSearchParams, useRouter } from 'expo-router'; // Hook para capturar parâmetros da rota
+import { useLocalSearchParams, useRouter } from 'expo-router'; 
 import { getUserId } from '../storage';
 import ipConf from '../ipconfig';
 import uploadImage from '../uploadImage';
 import * as ImagePicker from 'expo-image-picker';
 
 const EditPet = () => {
-  const { id } = useSearchParams(); // Captura o ID do pet da rota
-  const router = useRouter(); // Para redirecionar após edição
+  const { id } = useLocalSearchParams(); 
+  const router = useRouter(); 
   const [loading, setLoading] = useState(false);
   const [idUsuario, setIdUsuario] = useState(null);
 
-  // Estados do formulário
   const [nomePet, setNomePet] = useState('');
   const [tipoPet, setTipoPet] = useState('');
   const [raca, setRaca] = useState('');
@@ -34,7 +33,6 @@ const EditPet = () => {
   const [openPorte, setOpenPorte] = useState(false);
   const [openSexo, setOpenSexo] = useState(false);
 
-  // Busca o ID do usuário logado
   useEffect(() => {
     const fetchUserId = async () => {
       const id = await getUserId();
@@ -43,7 +41,6 @@ const EditPet = () => {
     fetchUserId();
   }, []);
 
-  // Busca as informações do pet
   useEffect(() => {
     const fetchPetData = async () => {
       try {
@@ -53,17 +50,18 @@ const EditPet = () => {
           const petData = await response.json();
           const pet = petData[0];
 
-          // Preenche os campos com os dados do pet
           setNomePet(pet.Nome);
           setTipoPet(pet.Tipo);
           setRaca(pet.Raca);
           setSexo(pet.Sexo);
           setPorte(pet.Porte);
           setComportamento(pet.Comportamento);
-          setIdade(pet.Idade);
+          setIdade(pet.Idade?.toString());
           setCidade(pet.Cidade);
           setRua(pet.Rua);
           setFotoUrl(pet.Foto_URL);
+          setFoto(pet.Foto_URL);
+          setSexo(pet.Sexo === 'M' ? 'Macho' : 'Fêmea');
         } else {
           Alert.alert('Erro', 'Não foi possível carregar as informações do pet.');
         }
@@ -78,7 +76,7 @@ const EditPet = () => {
     if (id) fetchPetData();
   }, [id]);
 
-  // Atualiza as raças quando o tipo de pet é alterado
+
   useEffect(() => {
     const fetchBreeds = async () => {
       let url = '';
@@ -104,7 +102,6 @@ const EditPet = () => {
     if (tipoPet) fetchBreeds();
   }, [tipoPet]);
 
-  // Seleciona uma nova foto
   const selecionarFoto = async () => {
     try {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -146,7 +143,6 @@ const EditPet = () => {
     }
   };
 
-  // Valida o formulário antes de submeter
   const validarFormulario = () => {
     if (!nomePet || !tipoPet || !raca || !sexo || !porte || !comportamento || !idade || !fotoUrl || !cidade || !rua) {
       Alert.alert('Erro', 'Por favor, preencha todos os campos obrigatórios.');
@@ -155,7 +151,6 @@ const EditPet = () => {
     return true;
   };
 
-  // Atualiza as informações do pet
   const atualizarPet = async () => {
     if (!validarFormulario()) return;
 
@@ -185,7 +180,7 @@ const EditPet = () => {
 
       if (response.ok) {
         Alert.alert('Sucesso', 'Informações do pet atualizadas com sucesso!');
-        router.push('/mypets'); 
+        router.push('/dashboard'); 
       } else {
         Alert.alert('Erro', 'Erro ao atualizar as informações do pet.');
       }
@@ -204,8 +199,8 @@ const EditPet = () => {
     >
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
         <TouchableOpacity style={styles.fotoContainer} onPress={selecionarFoto}>
-          {foto ? (
-            <Image source={{ uri: foto.uri }} style={styles.foto} />
+        {foto ? (
+            <Image source={{ uri: foto }} style={styles.foto} />
           ) : (
             <Text style={styles.fotoPlaceholder}>+</Text>
           )}
@@ -275,8 +270,8 @@ const EditPet = () => {
         <CustomTextInput placeholder="Cidade" value={cidade} onChangeText={setCidade} />
         <CustomTextInput placeholder="Rua" value={rua} onChangeText={setRua} />
 
-        <TouchableOpacity style={styles.button} onPress={RegistraPet} disabled={loading}>
-          {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Cadastrar</Text>}
+        <TouchableOpacity style={styles.button} onPress={atualizarPet} disabled={loading}>
+          {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Atualizar</Text>}
         </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>

@@ -207,14 +207,14 @@ app.put('/pets/:id', (req, res) => {
     console.log('Recebendo requisição PUT em /pets/:id');
   
     const petId = req.params.id;
-    const { tipo, raca, nome, sexo, idade, porte, comportamento, cidade, rua, foto, fk_usuario_id } = req.body;
+    const { tipo, raca, nome, sexo, idade, porte, comportamento, cidade, rua, foto } = req.body;
   
-    const petData = [tipo, raca, nome, sexo, idade, porte, comportamento, cidade, rua, foto, fk_usuario_id, petId];
+    const petData = [tipo, raca, nome, sexo, idade, porte, comportamento, cidade, rua, foto, petId];
   
     const petQuery = `
       UPDATE Pet
-      SET Tipo = ?, Raca = ?, Nome = ?, Sexo = ?, Idade = ?, Porte = ?, Comportamento = ?, Cidade = ?, Rua = ?, Foto_URL = ?, FK_Usuario_ID = ?
-      WHERE ID = ?
+      SET Tipo = ?, Raca = ?, Nome = ?, Sexo = ?, Idade = ?, Porte = ?, Comportamento = ?, Cidade = ?, Rua = ?, Foto_URL = ?
+      WHERE ID_Animal = ?
     `;
   
     const connection = mysql.createConnection(db);
