@@ -51,22 +51,32 @@ const Filter = () => {
     const porteMap = { P: 'pequeno', M: 'médio', G: 'grande' };
   
     const params = new URLSearchParams({
-      tipo: animalType,              // 'cachorro' ou 'gato'
-      raca: breed,                   // raça selecionada
-      idade: age,                    // idade informada
-      sexo: petSex === 'Macho' ? 'M' : petSex === 'Femea' ? 'F' : '', // M ou F
-      porte: porteMap[size],         // pequeno, médio ou grande
+      tipo: animalType,              
+      raca: breed,                  
+      idade: age,                   
+      sexo: petSex === 'Macho' ? 'M' : petSex === 'Femea' ? 'F' : '', 
+      porte: porteMap[size],         
     });
   
     try {
       const response = await fetch(`${ipConf()}/pets/filtrar?${params.toString()}`);
       const data = await response.json();
-      console.log('Pets filtrados:', data);
-      setPets(data);
+  
+      if (data.length > 0) {
+        console.log('Pets filtrados:', data);
+        router.push({
+          pathname: '/dashboard/search/filtered-pets', 
+          params: { pets: JSON.stringify(data) }, 
+        });
+      } else {
+        alert('Nenhum pet encontrado com os filtros selecionados.');
+      }
     } catch (error) {
       console.error('Erro ao buscar pets filtrados:', error);
+      alert('Erro ao buscar os pets filtrados. Tente novamente mais tarde.');
     }
   };
+  
   
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -154,7 +164,7 @@ const Filter = () => {
         </View>
 
         {/* Botão Salvar */}
-        <TouchableOpacity style={styles.saveButton} onPress={() => alert('Informações salvas!')}>
+        <TouchableOpacity style={styles.saveButton} onPress={fetchFilteredPets}>
           <Text style={styles.saveButtonText}>Salvar</Text>
         </TouchableOpacity>
       </View>
@@ -215,6 +225,7 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   saveButton: {
+    marginTop: 10,
     backgroundColor: '#212A75',
     padding: 15,
     borderRadius: 5,

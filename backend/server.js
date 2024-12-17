@@ -679,7 +679,6 @@ app.get('/notificacoes/:idUsuario', (req, res) => {
     });
 });
 
-  
 app.listen(port, () => {
     console.log(`App escutando na porta ${port}`);
     console.log('Rotas do servidor:');
