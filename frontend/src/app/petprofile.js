@@ -267,7 +267,7 @@ const ProfilePet = () => {
         <Text style={styles.petName}>{`${pet.Nome}, ${pet.Idade}`}</Text>
         <Text style={styles.petDetail}>• Porte {pet.Porte}</Text>
         <Text style={styles.petDetail}>• {pet.Raca}</Text>
-        <Text style={styles.petDetail}>• {pet.Sexo ? 'Macho' : 'Fêmea'}</Text>
+        <Text style={styles.petDetail}>• {pet.Sexo === 'M' ? 'Macho' : 'Fêmea'}</Text>
         <Text style={styles.petDetail}>• Residente de {pet.Cidade}</Text>
         <Text style={styles.petDetail}>• {pet.Comportamento}</Text>
       </View>

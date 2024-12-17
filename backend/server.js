@@ -205,32 +205,6 @@ app.get('/pets/usuario/:idUsuario', (req, res) => {
     execSQLQuery(`SELECT * FROM Pet WHERE FK_Usuario_ID = ?`, [idUsuario], res); 
   });  
 
-app.get('/pets/search', async (req, res) => {
-    try {
-        console.log("Requisição recebida em /pets/search");
-        console.log("Parâmetros da requisição:", req.query);
-
-        const { nome } = req.query;
-        if (!nome) {
-            return res.status(400).json({ error: 'O parâmetro "nome" é obrigatório.' });
-        }
-
-        const searchTerm = `%${nome.trim().toLowerCase()}%`;
-        console.log("Valor de pesquisa:", searchTerm);
-
-        const connection = await mysql.createConnection(db);
-        const [results] = await connection.promise().query(
-            'SELECT * FROM Pet WHERE LOWER(Nome) LIKE ?',
-            [searchTerm]
-        );
-        console.log("Resultados:", results);
-        res.json(results);
-    } catch (error) {
-        console.error("Erro ao executar a consulta:", error);
-        res.status(500).json({ error: 'Erro interno no servidor', detalhes: error.message });
-    }
-});
-
 app.put('/pets/:id', (req, res) => {
     console.log('Recebendo requisição PUT em /pets/:id');
   
@@ -267,6 +241,50 @@ app.delete('/pets/:id', (req, res) => {
 
     execSQLQuery(query, [idPet], res);
 });
+
+app.get('/pets/filtrar', async (req, res) => {
+    const { tipo, raca, idade, sexo, porte } = req.query;
+  
+    let query = `
+      SELECT * 
+      FROM Pet 
+      WHERE 1=1
+    `;
+  
+    const queryParams = [];
+  
+    if (tipo) {
+      query += ` AND Tipo = $${queryParams.length + 1}`;
+      queryParams.push(tipo);
+    }
+    if (raca) {
+      query += ` AND Raca = $${queryParams.length + 1}`;
+      queryParams.push(raca);
+    }
+    if (idade) {
+      query += ` AND Idade = $${queryParams.length + 1}`;
+      queryParams.push(idade);
+    }
+    if (sexo) {
+      query += ` AND Sexo = $${queryParams.length + 1}`;
+      queryParams.push(sexo === 'M' ? true : false);
+    }
+    if (porte) {
+      query += ` AND Porte = $${queryParams.length + 1}`;
+      const porteMap = { P: 'pequeno', M: 'médio', G: 'grande' };
+      queryParams.push(porteMap[porte]);
+    }
+  
+    try {
+      const result = await db.query(query, queryParams);
+      res.json(result.rows);
+    } catch (error) {
+      console.error('Erro ao buscar pets filtrados:', error);
+      res.status(500).json({ error: 'Erro ao buscar pets filtrados' });
+    }
+  });
+
+/********************************************endpoints para anuncios ******************************************************* */
 
 app.post('/anuncios', (req, res) => {
     console.log('Recebendo requisição POST em /anuncios');
@@ -661,52 +679,7 @@ app.get('/notificacoes/:idUsuario', (req, res) => {
     });
 });
 
-app.get('/pets/filter', (req, res) => {
-    
-    const { tipo, raca, nome, sexo, idade, porte, cidade, rua } = req.query;
-
-    
-    let query = 'SELECT * FROM Pet WHERE 1=1';
-    const params = [];
-
-    
-    if (tipo) {
-        query += ' AND Tipo = ?';
-        params.push(tipo);
-    }
-    if (raca) {
-        query += ' AND Raca = ?';
-        params.push(raca);
-    }
-    if (nome) {
-        query += ' AND Nome LIKE ?';  
-        params.push(`%${nome}%`);
-    }
-    if (sexo) {
-        query += ' AND Sexo = ?';
-        params.push(sexo);
-    }
-    if (idade) {
-        query += ' AND Idade = ?';
-        params.push(idade);
-    }
-    if (porte) {
-        query += ' AND Porte = ?';
-        params.push(porte);
-    }
-    if (cidade) {
-        query += ' AND Cidade = ?';
-        params.push(cidade);
-    }
-    if (rua) {
-        query += ' AND Rua LIKE ?';  
-        params.push(`%${rua}%`);
-    }
-
-    
-    execSQLQuery(query, params, res);
-});
-
+  
 app.listen(port, () => {
     console.log(`App escutando na porta ${port}`);
     console.log('Rotas do servidor:');

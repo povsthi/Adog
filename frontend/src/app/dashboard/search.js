@@ -1,38 +1,42 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, TextInput, Text, StyleSheet, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import PetCard from '../../components/PetCard';
 import ipConf from '../ipconfig';
 import { useRouter } from 'expo-router';
 
-const SearchPets = ({ navigation }) => {
+const SearchPets = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [pets, setPets] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [isFocused, setIsFocused] = useState(false); 
+  const [isFocused, setIsFocused] = useState(false);
   const router = useRouter();
 
-  const handleSearch = async () => {
+  const fetchPets = async () => {
+    try {
+      const response = await fetch(`${ipConf()}/pets`, {
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      const data = await response.json();
+      console.log("Resposta da API:", data);
+      setPets(data);
+    } catch (error) {
+      console.error('Erro ao buscar pets:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchPets();
+  }, []);
+
+  const handleSearch = () => {
     if (!searchTerm.trim()) {
       Alert.alert('Erro', 'Por favor, insira um nome para pesquisar.');
       return;
     }
 
-    try {
-      setLoading(true);
-      const response = await fetch(`${ipConf()}/pets/search?nome=${encodeURIComponent(searchTerm)}`);
-      if (response.ok) {
-        const data = await response.json();
-        setPets(data);
-      } else {
-        Alert.alert('Erro', 'Não foi possível realizar a pesquisa.');
-      }
-    } catch (error) {
-      console.error('Erro ao buscar pets:', error);
-      Alert.alert('Erro', 'Ocorreu um erro ao buscar os pets.');
-    } finally {
-      setLoading(false);
-    }
   };
 
   return (
@@ -52,8 +56,8 @@ const SearchPets = ({ navigation }) => {
           onSubmitEditing={handleSearch}
           returnKeyType="search"
           placeholderTextColor="#aaa"
-          onFocus={() => setIsFocused(true)} 
-          onBlur={() => setIsFocused(false)}  
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
         />
         <Ionicons
           name="filter-outline"
@@ -63,17 +67,26 @@ const SearchPets = ({ navigation }) => {
           onPress={() => router.replace('/filter')} 
         />
       </View>
+      
       {loading ? (
         <ActivityIndicator size="large" color="#212A75" />
       ) : pets.length > 0 ? (
         <ScrollView style={styles.resultsContainer}>
-          {pets.map((pet) => (
-            <PetCard
-              key={pet.id}
-              pet={pet}
-              onPress={() => Alert.alert('Detalhes do Pet', `Você selecionou ${pet.Nome}`)}
-            />
-          ))}
+          {pets
+            .filter((val) => {
+              if (searchTerm === "") {
+                return val;
+              } else if (val.Nome && typeof val.Nome === 'string' && val.Nome.toLowerCase().includes(searchTerm.toLowerCase())) {
+                return val;
+              }
+            })
+            .map((pet) => (
+              <PetCard
+                key={pet.id}
+                pet={pet}
+                onPress={() => Alert.alert('Detalhes do Pet', `Você selecionou ${pet.Nome}`)}
+              />
+            ))}
         </ScrollView>
       ) : (
         <Text style={styles.noResultsText}>Nenhum pet encontrado.</Text>
@@ -105,7 +118,7 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     height: 40,
-    paddingLeft: 30, 
+    paddingLeft: 30,
     color: '#212A75',
   },
   filterIcon: {
@@ -124,7 +137,6 @@ const styles = StyleSheet.create({
 });
 
 export default SearchPets;
-
 
 
 

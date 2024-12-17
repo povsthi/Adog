@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, ScrollView, StyleSheet } from 'react-native';
 import PetCard from '../../components/PetCard';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { storeData } from '../storage';
 import ipConf from '../ipconfig';
 const Home = () => {
@@ -23,9 +23,11 @@ const Home = () => {
     }
   };
 
-  useEffect(() => {
-    fetchPets(); 
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchPets();
+    }, [])
+  );
 
   const handlePetClick = async (pet) => {
     if (pet?.ID_Animal) {  

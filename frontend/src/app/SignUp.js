@@ -7,6 +7,8 @@ import {
   Alert,
   ScrollView,
   Image,
+  Keyboard,
+  TouchableWithoutFeedback
 } from 'react-native';
 import * as Location from 'expo-location';
 import * as ImagePicker from 'expo-image-picker';
@@ -195,6 +197,7 @@ const SignUp = () => {
 
   
   return (
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
     <View style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.formContainer}>
@@ -287,6 +290,7 @@ const SignUp = () => {
         </View>
       </ScrollView>
     </View>
+    </TouchableWithoutFeedback>
   );
 };
 
