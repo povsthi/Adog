@@ -66,22 +66,33 @@ const Notification = () => {
       const response = await fetch(`${ipConf()}/match/${idAdota}`, {
         method: 'PUT',
       });
-
+  
       if (!response.ok) {
-        throw new Error('Erro ao registrar o match');
+        const data = await response.json();
+        throw new Error(data.message || 'Erro ao registrar o match');
       }
-
+  
+      const { telefones } = await response.json();
+  
       setNotificacoes((prev) =>
         prev.map((notificacao) =>
           notificacao.IDAdota === idAdota
-            ? { ...notificacao, Match: true, DataMatch: new Date().toISOString() }
+            ? { 
+                ...notificacao, 
+                Match: true, 
+                DataMatch: new Date().toISOString(),
+                Telefones: telefones,
+              }
             : notificacao
         )
       );
     } catch (error) {
+      Alert.alert('Erro', error.message);
       console.error('Erro ao retribuir interesse:', error);
     }
   };
+  
+  
 
   useEffect(() => {
     carregarNotificacoes();

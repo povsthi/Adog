@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, FlatList, StyleSheet, Text } from 'react-native';
 import { useSearchParams, useRouter } from 'expo-router'; 
-import PetCard from '../../../components/PetCard'; 
-import { storeData } from '../storage';
+import PetCard from '../components/PetCard'; 
+import { storeData } from './storage';
 
 const FilteredPets = () => {
   const router = useRouter(); 

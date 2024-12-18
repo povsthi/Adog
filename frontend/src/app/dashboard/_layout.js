@@ -17,7 +17,7 @@ export default function Layout() {
         }}
       />
       <Tabs.Screen
-        name="dashboard/search/index" 
+        name="search"
         options={{
           headerShown: false,
           title: "Buscar",

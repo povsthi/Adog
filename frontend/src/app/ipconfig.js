@@ -1,5 +1,5 @@
 const ipConf = () => {
-    return 'http://200.18.142.38:8080';
+    return 'http://192.168.2.105:8080';
   };
   
   export default ipConf;

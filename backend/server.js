@@ -242,47 +242,7 @@ app.delete('/pets/:id', (req, res) => {
     execSQLQuery(query, [idPet], res);
 });
 
-app.get('/pets/filtrar', async (req, res) => {
-    const { tipo, raca, idade, sexo, porte } = req.query;
   
-    let query = `
-      SELECT * 
-      FROM Pet 
-      WHERE 1=1
-    `;
-  
-    const queryParams = [];
-  
-    if (tipo) {
-      query += ` AND Tipo = $${queryParams.length + 1}`;
-      queryParams.push(tipo);
-    }
-    if (raca) {
-      query += ` AND Raca = $${queryParams.length + 1}`;
-      queryParams.push(raca);
-    }
-    if (idade) {
-      query += ` AND Idade = $${queryParams.length + 1}`;
-      queryParams.push(idade);
-    }
-    if (sexo) {
-      query += ` AND Sexo = $${queryParams.length + 1}`;
-      queryParams.push(sexo === 'M' ? true : false);
-    }
-    if (porte) {
-      query += ` AND Porte = $${queryParams.length + 1}`;
-      const porteMap = { P: 'pequeno', M: 'médio', G: 'grande' };
-      queryParams.push(porteMap[porte]);
-    }
-  
-    try {
-      const result = await db.query(query, queryParams);
-      res.json(result.rows);
-    } catch (error) {
-      console.error('Erro ao buscar pets filtrados:', error);
-      res.status(500).json({ error: 'Erro ao buscar pets filtrados' });
-    }
-  });
 
 /********************************************endpoints para anuncios ******************************************************* */
 
@@ -448,68 +408,72 @@ app.delete('/unlike', async (req, res) => {
 app.put('/match/:idAdota', (req, res) => {
     const { idAdota } = req.params;
 
-    const updateMatchQuery = `
-        UPDATE Adota_Like
-        SET DataMatch = CURRENT_TIMESTAMP
-        WHERE IDAdota = ? AND DataMatch IS NULL
+    const verificarMatchQuery = `
+        SELECT DataMatch, FK_Usuario_ID, FK_Pet_ID_Animal 
+        FROM Adota_Like 
+        WHERE IDAdota = ?;
     `;
 
-    const fetchUserInfoQuery = `
-        SELECT 
-            dono.Nome AS NomeDono, dono.Telefone AS TelefoneDono,
-            interessado.Nome AS NomeInteressado, interessado.Telefone AS TelefoneInteressado
-        FROM 
-            Adota_Like al
-        JOIN 
-            Pet p ON al.FK_Pet_ID_Animal = p.ID_Animal
-        JOIN 
-            Usuario dono ON p.FK_Usuario_ID = dono.ID
-        JOIN 
-            Usuario interessado ON al.FK_Usuario_ID = interessado.ID
-        WHERE 
-            al.IDAdota = ?
-    `;
+    execSQLQuery(verificarMatchQuery, [idAdota], {
+        json: (results) => {
+            if (results.length === 0) {
+                return res.status(404).json({ message: 'Like não encontrado.' });
+            }
 
-    execSQLQuery(updateMatchQuery, [idAdota], {
-        json: () => {
-            execSQLQuery(fetchUserInfoQuery, [idAdota], {
-                json: (results) => {
-                    if (results.length === 0) {
-                        return res.status(404).json({ error: 'Match ou usuários não encontrados.' });
-                    }
+            const { DataMatch, FK_Usuario_ID, FK_Pet_ID_Animal } = results[0];
+            if (DataMatch) {
+                return res.status(400).json({ message: 'Match já realizado.' });
+            }
 
-                    const { 
-                        NomeDono, TelefoneDono, 
-                        NomeInteressado, TelefoneInteressado 
-                    } = results[0];
+            // Registrar o Match
+            const registrarMatchQuery = `
+                UPDATE Adota_Like
+                SET DataMatch = NOW()
+                WHERE IDAdota = ?;
+            `;
 
-                    res.status(200).json({
-                        message: 'Match registrado com sucesso!',
-                        notificacoes: [
-                            { 
-                                usuario: 'Dono do Pet',
-                                mensagem: `✨ Match realizado! ${NomeInteressado} está interessado no seu pet. Telefone: ${TelefoneInteressado}`
-                            },
-                            { 
-                                usuario: 'Interessado',
-                                mensagem: `✨ Match realizado! ${NomeDono} retribuiu o interesse. Telefone: ${TelefoneDono}`
+            execSQLQuery(registrarMatchQuery, [idAdota], {
+                json: () => {
+                    // Obter números de telefone do usuário interessado e do dono do pet
+                    const buscarTelefonesQuery = `
+                        SELECT 
+                            (SELECT Telefone FROM Usuario WHERE ID = ?) AS TelefoneInteressado,
+                            (SELECT Telefone FROM Usuario 
+                             WHERE ID = (SELECT FK_Usuario_ID FROM Pet WHERE ID_Animal = ?)) AS TelefoneDonoPet
+                        FROM dual;
+                    `;
+
+                    execSQLQuery(buscarTelefonesQuery, [FK_Usuario_ID, FK_Pet_ID_Animal], {
+                        json: (phones) => {
+                            if (!phones || phones.length === 0) {
+                                return res.status(404).json({
+                                    message: 'Telefones dos usuários não encontrados.'
+                                });
                             }
-                        ]
+
+                            return res.status(200).json({
+                                message: 'Match registrado com sucesso.',
+                                telefones: phones[0], // Retorna os números
+                            });
+                        },
+                        status: (errorCode, errorMessage) => {
+                            console.error('Erro ao buscar telefones:', errorMessage);
+                            res.status(errorCode).json({ error: 'Erro ao buscar telefones.' });
+                        },
                     });
                 },
                 status: (errorCode, errorMessage) => {
-                    console.error('Erro ao buscar informações dos usuários:', errorMessage);
-                    res.status(errorCode).json({ error: 'Erro ao buscar informações dos usuários.' });
-                }
+                    console.error('Erro ao registrar match:', errorMessage);
+                    res.status(errorCode).json({ error: 'Erro ao registrar match.' });
+                },
             });
         },
         status: (errorCode, errorMessage) => {
-            console.error('Erro ao registrar o match:', errorMessage);
-            res.status(errorCode).json({ error: 'Erro ao registrar o match.' });
-        }
+            console.error('Erro ao verificar match:', errorMessage);
+            res.status(errorCode).json({ error: 'Erro ao verificar match.' });
+        },
     });
 });
-
 
 app.get('/matchs/:id', (req, res) => {
     const id = req.params.id;
@@ -647,6 +611,11 @@ app.get('/notificacoes/:idUsuario', (req, res) => {
             al.IDAdota, 
             al.DataLike, 
             al.Lida, 
+            al.DataMatch, -- Adiciona a data do match
+            CASE 
+                WHEN al.DataMatch IS NOT NULL THEN TRUE
+                ELSE FALSE
+            END AS MatchStatus, -- Indica se há match
             u.Nome AS UsuarioQueCurtiu,
             p.Nome AS NomePet
         FROM 

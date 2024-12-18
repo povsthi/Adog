@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback} from 'react';
 import { ScrollView, View, Text, StyleSheet, ActivityIndicator, Alert, Modal, TextInput, TouchableOpacity } from 'react-native';
 import { getUserId, storeData } from '../storage';
 import PetCard from '../../components/PetCard';
 import ipConf from '../ipconfig';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 
 
 const MyPets = () => {
@@ -45,6 +45,7 @@ const MyPets = () => {
       setLoading(false);
     }
   };
+
 
   const handlePetClick = async (pet) => {
     if (pet?.ID_Animal) {  

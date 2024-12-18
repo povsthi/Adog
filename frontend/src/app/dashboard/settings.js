@@ -9,6 +9,7 @@ import { useRouter } from 'expo-router';
 import CustomTextInput from '../../components/CustomTextInput';
 import uploadImage from '../uploadImage';
 import * as ImagePicker from 'expo-image-picker';
+import AdCard from '../../components/AdCard';
 
 
 const SettingsScreen = ({ navigation }) => {
@@ -173,7 +174,7 @@ const SettingsScreen = ({ navigation }) => {
             </View>
 
             <View style={styles.adContainer}>
-                <Text style={styles.adText}>Anúncio</Text>
+                <AdCard/>
             </View>
 
             <TouchableOpacity style={styles.button} onPress={SignOut}>
@@ -276,14 +277,7 @@ const styles = StyleSheet.create({
     },
     adContainer: {
         margin: 20,
-        height: 100,
-        backgroundColor: '#E1E1E1',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    adText: {
-        fontSize: 18,
-        color: '#9E9E9E',
+        
     },
     modalContainer: {
         flex: 1,

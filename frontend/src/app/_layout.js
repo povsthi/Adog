@@ -81,6 +81,12 @@ export default function Layout() {
       <Stack.Screen
        name="editpet/[id]"
        />
+       <Stack.Screen
+       name="filter"
+       />
+       <Stack.Screen
+       name="filtered-pets"
+       />
     </Stack>
 
   );

@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import ipConf from '../app/ipconfig';
 
 const NotCard = ({ notificacao, marcarComoLido, retribuirInteresse }) => {
-  const { UsuarioQueCurtiu, NomePet, Lida, IDAdota, DataMatch } = notificacao;
+  const { UsuarioQueCurtiu, NomePet, Lida, IDAdota, DataMatch, Telefones } = notificacao;
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -48,7 +48,7 @@ const NotCard = ({ notificacao, marcarComoLido, retribuirInteresse }) => {
           </TouchableOpacity>
         )}
 
-        {!DataMatch && (
+        {!DataMatch && !notificacao.Match && (
           <TouchableOpacity
             style={[styles.botao, styles.botaoMatch]}
             onPress={() => retribuirInteresse(IDAdota)}
@@ -59,7 +59,19 @@ const NotCard = ({ notificacao, marcarComoLido, retribuirInteresse }) => {
       </View>
 
       {DataMatch && (
-        <Text style={styles.matchMessage}>✨ Match realizado em {new Date(DataMatch).toLocaleDateString()}! ✨</Text>
+        <View style={styles.matchContainer}>
+          <Text style={styles.matchMessage}>✨ Match realizado em {new Date(DataMatch).toLocaleDateString()}! ✨</Text>
+          {Telefones && (
+            <>
+              <Text style={styles.telefoneTexto}>
+                Telefone do Dono: <Text style={styles.telefone}>{Telefones.TelefoneDono}</Text>
+              </Text>
+              <Text style={styles.telefoneTexto}>
+                Telefone do Interessado: <Text style={styles.telefone}>{Telefones.TelefoneInteressado}</Text>
+              </Text>
+            </>
+          )}
+        </View>
       )}
     </View>
   );
@@ -117,16 +129,31 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 14,
   },
-  matchMessage: {
+  matchContainer: {
     marginTop: 10,
+    backgroundColor: '#e6f7ff',
+    padding: 10,
+    borderRadius: 5,
+  },
+  matchMessage: {
     fontSize: 16,
     color: '#28a745',
     fontWeight: 'bold',
     textAlign: 'center',
   },
+  telefoneTexto: {
+    fontSize: 14,
+    color: '#333',
+    marginTop: 5,
+  },
+  telefone: {
+    fontWeight: 'bold',
+    color: '#007BFF',
+  },
 });
 
 export default NotCard;
+
 
 
 

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { View, TextInput, Text, StyleSheet, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import PetCard from '../../../components/PetCard';
-import ipConf from '../../ipconfig';
+import PetCard from '../../components/PetCard';
+import ipConf from '../ipconfig';
 import { useRouter } from 'expo-router';
 
 const SearchPets = () => {
@@ -64,7 +64,7 @@ const SearchPets = () => {
           size={24}
           color="#212A75"
           style={styles.filterIcon}
-          onPress={() => router.push('/dashboard/search/filter')} 
+          onPress={() => router.push('/filter')} 
         />
       </View>
       
@@ -123,6 +123,7 @@ const styles = StyleSheet.create({
   },
   filterIcon: {
     marginLeft: 10,
+    marginRight: 10,
     zIndex: 1,
   },
   resultsContainer: {
